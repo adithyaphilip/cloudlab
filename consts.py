@@ -6,7 +6,7 @@ class Mode(Enum):
     DEBUG = 2
 
 
-MODE = Mode.DEBUG
+MODE = Mode.PROD
 
 IPERF_BINARY = "iperf3" if MODE == Mode.PROD else "./iperf3_mac"
 LOG_FILEPATH = "iperf3_log"

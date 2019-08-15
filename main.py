@@ -6,6 +6,7 @@ import subprocess
 import consts
 import time
 
+
 # NOTE: This code has an upper limit on the RTT it can handle because of the ping timeout in consts.py
 
 def get_own_ip(starts_with):
