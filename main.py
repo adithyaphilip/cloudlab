@@ -47,8 +47,8 @@ def main():
             target_ip = "127.0.0.1"
             right_hand.start_iperf3_server()
         print("Target IP:", target_ip)
-        wait_till_target_live(target_ip, 1, 10)
-        left_hand.start_iperf(target_ip, consts.N_FLOWS)
+        wait_till_target_live(target_ip, consts.PING_TIMEOUT_S, consts.PING_TRIES)
+        left_hand.start_iperf(target_ip, consts.N_FLOWS, consts.TEST_TIME_S)
 
 
 main()
