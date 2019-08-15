@@ -6,6 +6,7 @@ import subprocess
 import consts
 import time
 
+# NOTE: This code has an upper limit on the RTT it can handle because of the ping timeout in consts.py
 
 def get_own_ip(starts_with):
     for interface in netifaces.interfaces():
@@ -19,7 +20,7 @@ def get_own_ip(starts_with):
 def wait_till_target_live(target_ip: str, ping_timeout_s: int, max_intervals: int):
     ctr = 0
 
-    while subprocess.call("ping -c 1 -W %d %s" % (ping_timeout_s * 1000, target_ip), shell=True) != 0:
+    while subprocess.call("ping -w %d %s" % (ping_timeout_s * 1000, target_ip), shell=True) != 0:
         print("Host is not live yet! Continue waiting.")
         ctr += 1
         if ctr >= max_intervals:
