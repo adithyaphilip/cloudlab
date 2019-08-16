@@ -34,7 +34,7 @@ def plot_line_graph(df: pd.DataFrame):
 def plot_cdf(agg_bw_series: pd.DataFrame):
     trace = go.Histogram(x=agg_bw_series,
                          xbins=dict(start=np.min(agg_bw_series),
-                                    size=0.25,
+                                    size=1,
                                     end=np.max(agg_bw_series)),
                          marker=dict(color='rgb(25, 25, 100)'))
 
@@ -53,8 +53,16 @@ def main():
 
     df_partial = df[df['ip'] == '192.168.1.1']
     plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.2']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.3']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.4']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.5']
+    plot_line_graph(df_partial)
 
-    df = trim_flow_times(10, 10, df)
+    df = trim_flow_times(60, 60, df)
     plot_cdf(get_avg_bw(df))
     pass
 
