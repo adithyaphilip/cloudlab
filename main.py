@@ -53,7 +53,9 @@ def main():
         wait_till_target_live(target_ip, consts.PING_TIMEOUT_S, consts.PING_TRIES)
         left_hand.start_iperf(target_ip, consts.N_FLOWS, consts.TEST_TIME_S)
 
-        log_parser.parse_iperf_json(consts.LOG_FILEPATH, own_ip, consts.LOG_PARSED_FILEPATH)
+        log_parser.parse_iperf_json(consts.LOG_FILEPATH, own_ip, consts.LOG_PARSED_FILEPATH + "_" + own_ip)
+        subprocess.call('scp -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1 /users/aphilip/'
+                        % (consts.LOG_PARSED_FILEPATH + "_" + own_ip), shell=True)
 
 
 main()
