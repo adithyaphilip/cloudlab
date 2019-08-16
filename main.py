@@ -5,6 +5,7 @@ import os
 import subprocess
 import consts
 import time
+import log_parser
 
 
 # NOTE: This code has an upper limit on the RTT it can handle because of the ping timeout in consts.py
@@ -51,6 +52,8 @@ def main():
         print("Target IP:", target_ip)
         wait_till_target_live(target_ip, consts.PING_TIMEOUT_S, consts.PING_TRIES)
         left_hand.start_iperf(target_ip, consts.N_FLOWS, consts.TEST_TIME_S)
+
+        log_parser.parse_iperf_json(consts.LOG_FILEPATH, own_ip, consts.LOG_PARSED_FILEPATH)
 
 
 main()

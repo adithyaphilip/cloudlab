@@ -10,6 +10,7 @@ MODE = Mode.PROD
 
 IPERF_BINARY = "iperf3" if MODE == Mode.PROD else "./iperf3_mac"
 LOG_FILEPATH = "iperf3_log"
+LOG_PARSED_FILEPATH = "iperf3_log_parsed"
 PING_TRIES = 600 if MODE == Mode.PROD else 10
 PING_TIMEOUT_S = 5 if MODE == Mode.PROD else 1
 
