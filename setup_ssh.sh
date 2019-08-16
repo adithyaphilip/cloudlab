@@ -1,5 +1,6 @@
 #!/bin/sh
 
+HOME=/users/aphilip
 # Create the user SSH directory, just in case.
 mkdir $HOME/.ssh && chmod 700 $HOME/.ssh
 
@@ -13,3 +14,5 @@ ssh-keygen -y -f $HOME/.ssh/id_rsa > $HOME/.ssh/id_rsa.pub
 # If you want to permit login authenticated by the auto-generated key,
 # then append the public half to the authorized_keys file:s
 grep -q -f $HOME/.ssh/id_rsa.pub $HOME/.ssh/authorized_keys || cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+
+chown aphilip -R $HOME
