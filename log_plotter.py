@@ -47,13 +47,14 @@ def plot_cdf(agg_bw_series: pd.DataFrame):
 
 
 def main():
-    df = pd.read_csv('merged_1.txt',
+    df = pd.read_csv('iperf3_log_parsed_merged',
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
-    df = trim_flow_times(10, 10, df)
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
     df_partial = df[df['ip'] == '192.168.1.1']
     plot_line_graph(df_partial)
+
+    df = trim_flow_times(10, 10, df)
     plot_cdf(get_avg_bw(df))
     pass
 

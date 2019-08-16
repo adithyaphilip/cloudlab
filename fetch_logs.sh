@@ -1,0 +1,1 @@
+curl https://raw.githubusercontent.com/adithyaphilip/cloudlab/temp/iperf3_log_parsed_merged > iperf3_log_parsed_merged
