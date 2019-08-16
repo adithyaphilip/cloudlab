@@ -51,7 +51,9 @@ def main():
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     df = trim_flow_times(10, 10, df)
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
-    # plot_line_graph(df)
+
+    df_partial = df[df['ip'] == '192.168.1.1']
+    plot_line_graph(df_partial)
     plot_cdf(get_avg_bw(df))
     pass
 
