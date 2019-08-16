@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import numpy as np
 
 
 def trim_flow_times(start_offset_s, end_offset_s, df: pd.DataFrame):
@@ -30,13 +31,29 @@ def plot_line_graph(df: pd.DataFrame):
     fig.show()
 
 
+def plot_cdf(agg_bw_series: pd.DataFrame):
+    trace = go.Histogram(x=agg_bw_series,
+                         xbins=dict(start=np.min(agg_bw_series),
+                                    size=0.25,
+                                    end=np.max(agg_bw_series)),
+                         marker=dict(color='rgb(25, 25, 100)'))
+
+    layout = go.Layout(
+        title="Histogram with Frequency Count"
+    )
+
+    fig = go.Figure(data=go.Data([trace]), layout=layout)
+    fig.show()
+
+
 def main():
     df = pd.read_csv('merged_1.txt',
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     # df = trim_flow_times(0, 0.5, df)
     # avg_bw = get_avg_bw(df)
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
-    plot_line_graph(df)
+    # plot_line_graph(df)
+    plot_cdf(get_avg_bw(df))
     pass
 
 
