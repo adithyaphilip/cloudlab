@@ -34,7 +34,7 @@ def plot_line_graph(df: pd.DataFrame):
 def plot_hist(agg_bw_series: pd.DataFrame, cumulative: bool):
     trace = go.Histogram(x=agg_bw_series,
                          xbins=dict(start=np.min(agg_bw_series),
-                                    size=0.05,
+                                    size=0.1,
                                     end=np.max(agg_bw_series)),
                          cumulative_enabled=cumulative,
                          marker=dict(color='rgb(25, 25, 100)'))
@@ -57,26 +57,26 @@ def plot_link_utilization(df: pd.DataFrame, bin_size_s: int):
 
 
 def main():
-    df = pd.read_csv('iperf3_log_parsed_merged_100',
+    df = pd.read_csv('iperf3_log_parsed_merged_128',
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
-    # df_partial = df[df['ip'] == '192.168.1.1']
-    # plot_line_graph(df_partial)
-    # df_partial = df[df['ip'] == '192.168.1.2']
-    # plot_line_graph(df_partial)
-    # df_partial = df[df['ip'] == '192.168.1.3']
-    # plot_line_graph(df_partial)
-    # df_partial = df[df['ip'] == '192.168.1.4']
-    # plot_line_graph(df_partial)
-    # df_partial = df[df['ip'] == '192.168.1.5']
-    # plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.1']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.2']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.3']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.4']
+    plot_line_graph(df_partial)
+    df_partial = df[df['ip'] == '192.168.1.5']
+    plot_line_graph(df_partial)
 
     plot_link_utilization(df, 60)
 
-    # df = trim_flow_times(60, 60, df)
-    # plot_hist(get_avg_bw(df), False)
-    # plot_hist(get_avg_bw(df), True)
+    df = trim_flow_times(60, 60, df)
+    plot_hist(get_avg_bw(df), False)
+    plot_hist(get_avg_bw(df), True)
     pass
 
 
