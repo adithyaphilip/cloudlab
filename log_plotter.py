@@ -34,7 +34,7 @@ def plot_line_graph(df: pd.DataFrame):
 def plot_hist(agg_bw_series: pd.DataFrame, cumulative: bool):
     trace = go.Histogram(x=agg_bw_series,
                          xbins=dict(start=np.min(agg_bw_series),
-                                    size=0.1,
+                                    size=0.5,
                                     end=np.max(agg_bw_series)),
                          cumulative_enabled=cumulative,
                          marker=dict(color='rgb(25, 25, 100)'))
@@ -57,7 +57,7 @@ def plot_link_utilization(df: pd.DataFrame, bin_size_s: int):
 
 
 def main():
-    df = pd.read_csv('iperf3_log_parsed_reno_10',
+    df = pd.read_csv('iperf3_log_parsed_merged_10',
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
