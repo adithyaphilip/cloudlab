@@ -25,6 +25,3 @@ def parse_iperf_json(filepath: str, own_ip: str, op_filepath: str):
             csv_out.writerow(row)
 
     return rows
-
-
-parse_iperf_json("iperf_log", "128", "test_out")
