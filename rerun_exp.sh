@@ -1,0 +1,1 @@
+pssh -h hosts_file_pssh 'git pull && sudo python3 main.py 2> main_err > main_out'
