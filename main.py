@@ -36,6 +36,8 @@ def wait_till_target_live(target_ip: str, ping_timeout_s: int, max_intervals: in
 def set_consts():
     # TODO: Change these from constants to readonlys
     consts.N_FLOWS = int(sys.argv[1])
+    consts.TEST_TIME_S = int(sys.argv[2])
+    consts.CONGESTION_ALGO = sys.argv[3]
 
 
 def main():
