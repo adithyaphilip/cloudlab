@@ -57,7 +57,7 @@ def plot_link_utilization(df: pd.DataFrame, bin_size_s: int):
 
 
 def main():
-    df = pd.read_csv('iperf3_log_parsed_merged_10',
+    df = pd.read_csv('iperf3_log_parsed_merged_2',
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
