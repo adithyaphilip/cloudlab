@@ -57,7 +57,7 @@ def plot_link_utilization(df: pd.DataFrame, bin_size_s: int):
 
 
 def main():
-    df = pd.read_csv('iperf3_log_parsed_merged_2',
+    df = pd.read_csv('iperf3_log_parsed_merged_1',
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
@@ -71,6 +71,8 @@ def main():
     plot_line_graph(df_partial)
     df_partial = df[df['ip'] == '192.168.1.5']
     plot_line_graph(df_partial)
+
+    plot_line_graph(df)
 
     plot_link_utilization(df, 60)
 

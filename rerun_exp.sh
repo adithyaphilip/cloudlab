@@ -1,6 +1,7 @@
 if [ -z "$1" ]
   then
     echo "Requires 1 argument - number of flows to execute"
+    exit 1
 fi
 
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h hosts_file_pssh "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do kill -9 \$pid; done;"
@@ -8,4 +9,4 @@ parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h hosts_fil
 # 'cd cloudlab && git pull && sudo python3 main.py 2> main_err > main_out'
 
 cat iperf3_log_parsed* > iperf3_log_parsed_merged
-git checkout -b temp && git add iperf3_log_parsed* && git commit -m "added logs" && git push -f origin temp && git checkout master && git branch -D temp
+git checkout -b logs_$1 && git add iperf3_log_parsed* && git commit -m "added logs" && git push -f origin logs_$1 && git checkout master && git branch -D logs_$1
