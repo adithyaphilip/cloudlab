@@ -2,6 +2,7 @@ import netifaces
 import right_hand
 import left_hand
 import os
+import sys
 import subprocess
 import consts
 import time
@@ -32,7 +33,14 @@ def wait_till_target_live(target_ip: str, ping_timeout_s: int, max_intervals: in
     return None
 
 
+def set_consts():
+    # TODO: Change these from constants to readonlys
+    consts.N_FLOWS = int(sys.argv[1])
+
+
 def main():
+    set_consts()
+
     if os.path.exists(consts.LOG_FILEPATH):
         print("Deleting old log file")
         os.remove(consts.LOG_FILEPATH)
@@ -54,8 +62,9 @@ def main():
         left_hand.start_iperf(target_ip, consts.N_FLOWS, consts.TEST_TIME_S)
 
         log_parser.parse_iperf_json(consts.LOG_FILEPATH, own_ip, consts.LOG_PARSED_FILEPATH + "_" + own_ip)
-        subprocess.call('scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
-                        % (consts.LOG_PARSED_FILEPATH + "_" + own_ip), shell=True)
+        subprocess.call(
+            'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
+            % (consts.LOG_PARSED_FILEPATH + "_" + own_ip), shell=True)
 
 
 main()
