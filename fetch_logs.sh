@@ -1,6 +1,6 @@
-if [ -z "$1" ]
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
   then
-    echo "Requires 1 argument - number of flows executed to generate the log being fetched"
+    echo "Usage: fetch_logs.sh num_flows time_run congestion_algo"
     exit 1
 fi
 
