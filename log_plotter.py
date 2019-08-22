@@ -73,11 +73,13 @@ def get_hist(agg_bw_series: pd.DataFrame, cumulative: bool):
 
 def main():
     btl_link_cap_mB = 1250
-    num_flows_per_node = 50
+    num_flows_per_node = 1
     num_nodes = 5
+    algo = 'cubic'
+    time_run_s = 300
     demand = btl_link_cap_mB / num_flows_per_node / num_nodes
 
-    df = pd.read_csv('logs/%d_flows_600_s_cubic_algo' % num_flows_per_node,
+    df = pd.read_csv('logs/%d_flows_%d_s_%s_algo' % (num_flows_per_node, time_run_s, algo),
                      names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
