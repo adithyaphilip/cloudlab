@@ -5,6 +5,7 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ];
 fi
 
 # just to ensure the credential store has our password
+git config credential.helper store
 git checkout -b temp_verify && git push -fu origin temp_verify && git checkout master && git branch -D temp_verify
 
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h hosts_file_pssh "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
