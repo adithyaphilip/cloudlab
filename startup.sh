@@ -7,13 +7,13 @@ sudo bash setup_ssh.sh
 
 sudo tc qdisc add dev eno50 root netem delay 10ms
 
-sudo sysctl -w net.core.rmem_max=10737418240
-sudo sysctl -w net.core.wmem_max=10737418240
-sudo sysctl -w net.core.rmem_default=10737418240
-sudo sysctl -w net.core.wmem_default=10737418240
-sudo sysctl -w net.ipv4.tcp_rmem='4096 87380 10737418240'
-sudo sysctl -w net.ipv4.tcp_wmem='4096 87380 10737418240'
-sudo sysctl -w net.ipv4.tcp_mem='10737418240 10737418240 10737418240'
+sudo sysctl -w net.core.rmem_max=2147479552
+sudo sysctl -w net.core.wmem_max=2147479552
+sudo sysctl -w net.core.rmem_default=2147479552
+sudo sysctl -w net.core.wmem_default=2147479552
+sudo sysctl -w net.ipv4.tcp_rmem='4096 87380 2147479552'
+sudo sysctl -w net.ipv4.tcp_wmem='4096 87380 2147479552'
+sudo sysctl -w net.ipv4.tcp_mem='2147479552 2147479552 2147479552'
 sudo sysctl -w net.ipv4.route.flush=1
 
 # python3 main.py > main_out 2> main_err
