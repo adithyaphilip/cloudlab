@@ -20,12 +20,10 @@ def get_avg_bw(df: pd.DataFrame):
 
 
 def plot_line_graph(df: pd.DataFrame):
-    # fig = px.line(df, x='endtime', y='bw')
-    # fig.show()
     fig = go.Figure()
 
     for name, group in df.groupby(by=['ip', 'socket']):
-        fig.add_trace(go.Scatter(x=group["endtime"], y=group['bw'], name=':'.join(map(str, name))))
+        fig.add_trace(go.Scatter(x=group["endtime"], y=group['datasize']/group['interval'], name=':'.join(map(str, name))))
 
     fig.update_layout(title_text='Flow bandwidth over time')
     fig.show()
