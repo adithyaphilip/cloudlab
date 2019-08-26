@@ -1,0 +1,2 @@
+
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h servers_file_pssh "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done; cd cloudlab; iperf3 -sD"
