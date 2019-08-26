@@ -16,7 +16,7 @@ def parse_iperf_json(own_ip: str, op_filepath: str):
 
         for interval in logs["intervals"]:
             for stream in interval["streams"]:
-                sock_num = stream["socket"] + "_%d" % part
+                sock_num = str(stream["socket"]) + "_%d" % part
                 data_mb = stream["bytes"] / (1024 ** 2)
                 end_time = stream["end"] + start_time
                 interval_s = stream["seconds"]
