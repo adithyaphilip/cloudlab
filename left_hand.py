@@ -25,6 +25,10 @@ def start_iperf(target_ip: str):
     for part in range(consts.N_FLOWS // consts.IPERF_MAX_CONN_PER_CLIENT + 1):
         port_num = consts.IPERF_SERVER_BASE_PORT + part
         num_flows = min(consts.N_FLOWS - consts.IPERF_MAX_CONN_PER_CLIENT * part, consts.IPERF_MAX_CONN_PER_CLIENT)
+
+        if num_flows == 0:
+            break
+
         threads.append(threading.Thread(target=iperf3_run, args=(target_ip, num_flows, port_num, part)))
         threads[-1].start()
 

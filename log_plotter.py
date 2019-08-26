@@ -71,10 +71,10 @@ def get_hist(agg_bw_series: pd.DataFrame, cumulative: bool):
 
 def main():
     btl_link_cap_mB = 1250
-    num_flows_per_node = 1
+    num_flows_per_node = 200
     num_nodes = 5
     algo = 'cubic'
-    time_run_s = 300
+    time_run_s = 60
     demand = btl_link_cap_mB / num_flows_per_node / num_nodes
 
     df = pd.read_csv('logs/%d_flows_%d_s_%s_algo' % (num_flows_per_node, time_run_s, algo),
