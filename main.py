@@ -43,9 +43,9 @@ def set_consts():
 def main():
     set_consts()
 
-    if os.path.exists(consts.LOG_FILEPATH):
+    if os.path.exists(consts.LOG_FILEPATH_PREFIX + "_0"):
         print("Deleting old log file")
-        os.remove(consts.LOG_FILEPATH)
+        subprocess.call('rm %s*' % consts.LOG_FILEPATH_PREFIX, shell=True)
 
     print("IMP: Running in MODE", str(consts.MODE))
     own_ip = get_own_ip(consts.IP_PREFIX)
@@ -61,9 +61,9 @@ def main():
             right_hand.start_iperf3_server()
         print("Target IP:", target_ip)
         wait_till_target_live(target_ip, consts.PING_TIMEOUT_S, consts.PING_TRIES)
-        left_hand.start_iperf(target_ip, consts.N_FLOWS, consts.TEST_TIME_S)
+        left_hand.start_iperf(target_ip)
 
-        log_parser.parse_iperf_json(consts.LOG_FILEPATH, own_ip, consts.LOG_PARSED_FILEPATH + "_" + own_ip)
+        log_parser.parse_iperf_json(own_ip, consts.LOG_PARSED_FILEPATH + "_" + own_ip)
         subprocess.call(
             'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
             % (consts.LOG_PARSED_FILEPATH + "_" + own_ip), shell=True)

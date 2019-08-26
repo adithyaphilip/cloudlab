@@ -1,23 +1,29 @@
 import json
 import csv
+import os
+import consts
 
 
 # returns a list of log entries as tuples - OwnIp, SockNum, EndTime, DataSizeMB, Interval, Bandwidth
-def parse_iperf_json(filepath: str, own_ip: str, op_filepath: str):
-    with open(filepath, 'r') as f:
-        logs = json.load(f)
-    start_time = logs["start"]["timestamp"]["timesecs"]
-
+def parse_iperf_json(own_ip: str, op_filepath: str):
     rows = []
+    part = 0
 
-    for interval in logs["intervals"]:
-        for stream in interval["streams"]:
-            sock_num = stream["socket"]
-            data_mb = stream["bytes"] / (1024 ** 2)
-            end_time = stream["end"] + start_time
-            interval_s = stream["seconds"]
-            bw = data_mb / interval_s
-            rows.append((own_ip, sock_num, end_time, data_mb, interval_s, bw))
+    while os.path.exists(consts.LOG_FILEPATH_PREFIX + '_%d' % part):
+        with open(consts.LOG_FILEPATH_PREFIX + '_%d' % part) as f:
+            logs = json.load(f)
+        start_time = logs["start"]["timestamp"]["timesecs"]
+
+        for interval in logs["intervals"]:
+            for stream in interval["streams"]:
+                sock_num = stream["socket"] + "_%d" % part
+                data_mb = stream["bytes"] / (1024 ** 2)
+                end_time = stream["end"] + start_time
+                interval_s = stream["seconds"]
+                bw = data_mb / interval_s
+                rows.append((own_ip, sock_num, end_time, data_mb, interval_s, bw))
+
+        part += 1
 
     with open(op_filepath, 'w') as f:
         csv_out = csv.writer(f)
