@@ -13,7 +13,7 @@ LOG_FILEPATH_PREFIX = "iperf3_log"
 LOG_PARSED_FILEPATH = "iperf3_log_parsed"
 PING_TRIES = 600 if MODE == Mode.PROD else 10
 PING_TIMEOUT_S = 5 if MODE == Mode.PROD else 1
-IPERF_SERVER_BASE_PORT = 6000
+IPERF_SERVER_BASE_PORT = 6001
 
 # if there are more than these number of connections to be made, we will start a new client
 IPERF_MAX_CONN_PER_CLIENT = 100
