@@ -6,7 +6,7 @@ import threading
 
 
 def iperf3_run(target_ip: str, n_flows: int, port_num: int, part: int):
-    subprocess.call("%s -c %s -p %d -P %d -t %d -i %d --json -C %s -w 2G > %s"
+    subprocess.call("%s -c %s -p %d -P %d -t %d -i %d --json -C %s > %s"
                     % (consts.IPERF_BINARY,
                        target_ip,
                        port_num,

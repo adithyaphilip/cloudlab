@@ -71,10 +71,10 @@ def get_hist(agg_bw_series: pd.DataFrame, cumulative: bool):
 
 def main():
     btl_link_cap_mB = 1250
-    num_flows_per_node = 200
+    num_flows_per_node = 10
     num_nodes = 5
     algo = 'cubic'
-    time_run_s = 60
+    time_run_s = 600
     demand = btl_link_cap_mB / num_flows_per_node / num_nodes
 
     df = pd.read_csv('logs/%d_flows_%d_s_%s_algo' % (num_flows_per_node, time_run_s, algo),
@@ -92,7 +92,8 @@ def main():
     # df_partial = df[df['ip'] == '192.168.1.5']
     # plot_line_graph(df_partial)
 
-    plot_line_graph(df)
+    if num_flows_per_node * num_nodes <= 500:
+        plot_line_graph(df)
 
     plot_link_utilization(df, 60, btl_link_cap_mB)
 
