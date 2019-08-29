@@ -68,20 +68,23 @@ def get_hist(agg_bw_series: pd.DataFrame, cumulative: bool, demand_per_flow_mb: 
     return trace
 
 
-def plot_multiple_exp_hist(dfs_demands: List[Tuple[pd.DataFrame, float]], cumulative: bool, cols_num=3):
-    hist_traces = []
+def plot_multiple_exp_hist(flow_counts_ordered: List[int],
+                           dfs_demands: List[Tuple[pd.DataFrame, float]],
+                           cumulative: bool,
+                           cols_num=3):
 
-    for df, demand in dfs_demands:
-        df_trimmed = trim_flow_times(60, 60, df)
-        hist_traces.append(get_hist(get_avg_bw(df_trimmed), cumulative, demand))
-
-    fig = plsb.make_subplots(rows=math.ceil(len(dfs_demands) / cols_num), cols=cols_num)
+    fig = plsb.make_subplots(rows=math.ceil(len(dfs_demands) / cols_num), cols=cols_num,
+                             subplot_titles=["%d Flows" % x for x in flow_counts_ordered])
 
     ctr = 0
-    for trace in hist_traces:
+    for df, demand in dfs_demands:
+        df_trimmed = trim_flow_times(60, 60, df)
+        avg_bws = get_avg_bw(df_trimmed)
+        trace = get_hist(avg_bws, cumulative, demand)
+
         row, col = ctr // cols_num + 1, ctr % cols_num + 1
         fig.add_trace(trace, row=row, col=col)
-        fig.update_xaxes(title_text="Goodput/Demand", row=row, col=col, range=[0, 2])
+        fig.update_xaxes(title_text="Goodput/Demand", row=row, col=col, range=[0.5, 2])
         fig.update_yaxes(title_text="% flows", row=row, col=col, range=[0, 100])
         ctr += 1
 
@@ -89,11 +92,18 @@ def plot_multiple_exp_hist(dfs_demands: List[Tuple[pd.DataFrame, float]], cumula
     fig.show()
 
 
+def plot_multiple_bw_util(flow_counts_ordered: List[int],
+                           dfs_demands: List[Tuple[pd.DataFrame, float]],
+                           cumulative: bool,
+                           cols_num=3):
+    pass
+
+
 def get_dfs_and_demands(blt_link_cap_mb: float, flows_per_node_time_algo_l: List[Tuple[int, int, str]], num_nodes: int):
     dfs_demands = []
 
     for tup in flows_per_node_time_algo_l:
-        df = pd.read_csv('logs/%d_flows_%d_s_%s_algo' % tup,
+        df = pd.read_csv('logs/%d_flows_%d_s_%s_algo_3' % tup,
                          names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
         df['endtime'] = df['endtime'] - df['endtime'].min() + 1
         dfs_demands.append((df, blt_link_cap_mb / num_nodes / tup[0]))
@@ -104,21 +114,23 @@ def get_dfs_and_demands(blt_link_cap_mb: float, flows_per_node_time_algo_l: List
 def main():
     btl_link_cap_mb = 1250  # mega BYTES
     num_nodes = 5
-    flows_per_node_time_algo_l = [(200, 600, 'cubic'), (50, 600, 'cubic'), (10, 600, 'cubic'), (1, 600, 'cubic')]
+    flows_per_node_time_algo_l = [(1000, 600, 'cubic')]
+    # flows_per_node_time_algo_l = [(400, 600, 'cubic'), (200, 600, 'cubic'), (100, 600, 'cubic'),
+    #                               (50, 600, 'cubic'), (10, 600, 'cubic'), (1, 600, 'cubic')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic')]
 
     dfs_demands = get_dfs_and_demands(btl_link_cap_mb, flows_per_node_time_algo_l, num_nodes)
 
-    # for df, demand in dfs_demands:
-    #     plot_line_graph(df, demand)
-    #
-    #     plot_link_utilization(df, 60, btl_link_cap_mb)
-    #
-    #     df = trim_flow_times(60, 60, df)
-    #     plot_hist(get_avg_bw(df), False, demand)
-    #     plot_hist(get_avg_bw(df), True, demand)
+    for df, demand in dfs_demands:
+        plot_line_graph(df, demand)
 
-    plot_multiple_exp_hist(dfs_demands, False)
+        plot_link_utilization(df, 60, btl_link_cap_mb)
+
+        df = trim_flow_times(60, 60, df)
+        plot_hist(get_avg_bw(df), False, demand)
+        plot_hist(get_avg_bw(df), True, demand)
+
+    # plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, False)
 
 
 main()
