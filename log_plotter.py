@@ -20,8 +20,13 @@ def trim_flow_times(start_offset_s, end_offset_s, df: pd.DataFrame):
     return df_filtered
 
 
-def get_avg_bw(df: pd.DataFrame):
+# gprs - goodput rates
+def get_avg_gprs(df: pd.DataFrame):
     return df.groupby(by=["ip", "socket"]).apply(lambda rows: rows['datasize'].sum() / rows['interval'].sum())
+
+
+def get_tot_avg_gpr(df: pd.DataFrame):
+    return df['datasize'].sum() / (df['endtime'].max() - df['endtime'].min())
 
 
 def plot_line_graph(df: pd.DataFrame, demand: float):
@@ -78,6 +83,7 @@ def get_hist(agg_bw_series: pd.DataFrame, cumulative: bool, demand_per_flow_mb: 
 def plot_multiple_exp_hist(flow_counts_ordered: List[int],
                            dfs_demands: List[Tuple[pd.DataFrame, float]],
                            cumulative: bool,
+                           btl_bw_mb: float,
                            cols_num=3):
     fig = plsb.make_subplots(rows=math.ceil(len(dfs_demands) / cols_num), cols=cols_num,
                              subplot_titles=["%d Flows" % x for x in flow_counts_ordered])
@@ -85,12 +91,15 @@ def plot_multiple_exp_hist(flow_counts_ordered: List[int],
     ctr = 0
     for df, demand in dfs_demands:
         df_trimmed = trim_flow_times(60, 60, df)
-        avg_bws = get_avg_bw(df_trimmed)
+        avg_bws = get_avg_gprs(df_trimmed)
         trace = get_hist(avg_bws, cumulative, demand)
+        avg_gpr_ratio = get_tot_avg_gpr(df) / btl_bw_mb
+        trace2 = go.Scatter(x=[avg_gpr_ratio, avg_gpr_ratio], y=[0, 100], name='Overall Goodput Rate', mode='lines')
 
         row, col = ctr // cols_num + 1, ctr % cols_num + 1
         fig.add_trace(trace, row=row, col=col)
-        fig.update_xaxes(title_text="Goodput/Demand", row=row, col=col, range=[0.5, 2])
+        fig.add_trace(trace2, row=row, col=col)
+        fig.update_xaxes(title_text="Goodput Rate/Demand", row=row, col=col, range=[0, 2])
         fig.update_yaxes(title_text="% flows", row=row, col=col, range=[0, 100])
         ctr += 1
 
@@ -113,7 +122,7 @@ def plot_multiple_bw_util(flow_counts_ordered: List[int],
         row, col = ctr // cols_num + 1, ctr % cols_num + 1
         fig.add_trace(trace, row=row, col=col)
         fig.update_xaxes(title_text="Time", row=row, col=col)
-        fig.update_yaxes(title_text="Goodput as %% of Bottleneck Bandwidth", row=row, col=col, range=[0.3, 1.1])
+        fig.update_yaxes(title_text="%Goodput Rate/Bottleneck Bandwidth", row=row, col=col, range=[0.3, 1.1])
         ctr += 1
 
     fig.update_layout(title_text="Comparing demand satisfaction ratio")
@@ -139,20 +148,21 @@ def main():
     flows_per_node_time_algo_l = [(200, 600, 'cubic'), (400, 600, 'cubic'), (1000, 600, 'cubic'),
                                   (2000, 600, 'cubic'), (4000, 600, 'cubic'), (8000, 600, 'cubic')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic')]
+    # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic')]
 
     dfs_demands = get_dfs_and_demands(btl_link_cap_mb, flows_per_node_time_algo_l, num_nodes)
-
+    #
     # for df, demand in dfs_demands:
     #     plot_line_graph(df, demand)
     #
     #     plot_link_utilization(df, 60, btl_link_cap_mb)
     #
     #     df = trim_flow_times(60, 60, df)
-    #     plot_hist(get_avg_bw(df), False, demand)
-    #     plot_hist(get_avg_bw(df), True, demand)
+    #     plot_hist(get_avg_gprs(df), False, demand)
+    #     plot_hist(get_avg_gprs(df), True, demand)
 
-    # plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, False)
-    plot_multiple_bw_util([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb)
+    plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb)
+    # plot_multiple_bw_util([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb)
 
 
 main()
