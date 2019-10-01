@@ -190,11 +190,11 @@ def get_df_custom(filepath: str, demand: float):
 
 
 def main():
-    btl_link_cap_mb = 1250  # mega BYTES
+    btl_link_cap_mb = 1280  # mega BYTES
     num_nodes = 5
     # flows_per_node_time_algo_l = [(8000, 600, 'cubic')]
-    flows_per_node_time_algo_l = [(200, 600, 'cubic'), (400, 600, 'cubic'), (1000, 600, 'cubic'),
-                                  (2000, 600, 'cubic'), (4000, 600, 'cubic'), (8000, 600, 'cubic')]
+    flows_per_node_time_algo_l = [(200, 600, 'reno'), (400, 600, 'reno'), (1000, 600, 'reno'),
+                                  (2000, 600, 'reno'), (4000, 600, 'reno'), (8000, 600, 'reno')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic'),
     #                               (200, 600, 'cubic'), (400, 600, 'cubic'), (1000, 600, 'cubic'),
     #                               (2000, 600, 'cubic'), (4000, 600, 'cubic'), (8000, 600, 'cubic')]
@@ -202,36 +202,20 @@ def main():
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic')]
 
     dfs_demands = get_dfs_and_demands(btl_link_cap_mb, flows_per_node_time_algo_l, num_nodes)
-    #
-    # for df_demand, flows_per_node in zip(dfs_demands, map(lambda x: x[0], flows_per_node_time_algo_l)):
-    #     df, demand = df_demand
-    #     plot_line_graph(df, demand, True, flow_count=num_nodes * flows_per_node, trim=True, top=4, bot=4, mid=4)
-    #
-    #     plot_link_utilization(df, 60, btl_link_cap_mb)
-    #
-    #     plot_hist(get_avg_gprs(df), False, demand)
-    #     plot_hist(get_avg_gprs(df), True, demand)
 
-    # plot_jfis({int(btl_link_cap_mb / demand): df for df, demand in dfs_demands})
-    # plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
-    #                        cols_num=2)
+    for df_demand, flows_per_node in zip(dfs_demands, map(lambda x: x[0], flows_per_node_time_algo_l)):
+        df, demand = df_demand
+        plot_line_graph(df, demand, True, flow_count=num_nodes * flows_per_node, trim=True, top=2, bot=2, mid=2)
+
+        # plot_link_utilization(df, 60, btl_link_cap_mb)
+
+        # plot_hist(get_avg_gprs(df), False, demand)
+        # plot_hist(get_avg_gprs(df), True, demand)
+
+    plot_jfis({int(btl_link_cap_mb / demand): df for df, demand in dfs_demands})
+    plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
+                           cols_num=2)
     plot_multiple_bw_util([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb,
                           cols_num=2)
 
-
-def main_t():
-    dfs_demands = [get_df_custom(x, 625 / 100) for x in ['../btl_test_1_100',  '../btl_test_multiclient_logs']]
-    # df = trim_flow_times(60, 60, df)
-    # plot_line_graph(df, demand, True, flow_count=100, trim=True, top=3, bot=3, mid=3)
-    #
-    # plot_link_utilization(df, 60, 625)
-    #
-    # plot_hist(get_avg_gprs(df), False, demand)
-    # plot_hist(get_avg_gprs(df), True, demand)
-
-    plot_multiple_exp_hist([1, 2, 3], dfs_demands, True, 625,
-                           cols_num=2)
-    plot_multiple_bw_util([1, 2, 3], dfs_demands, 625,
-                          cols_num=2)
-
-main_t()
+main()
