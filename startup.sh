@@ -5,8 +5,6 @@ sudo pip3 install netifaces
 
 sudo bash setup_ssh.sh
 
-sudo tc qdisc add dev eno50 root netem delay 10ms
-
 sudo sysctl -w net.core.rmem_max=2147479552
 sudo sysctl -w net.core.wmem_max=2147479552
 sudo sysctl -w net.core.rmem_default=2147479552
