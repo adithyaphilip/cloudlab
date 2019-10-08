@@ -174,7 +174,7 @@ def get_dfs_and_demands(blt_link_cap_mb: float, flows_per_node_time_algo_l: List
 
     for tup in flows_per_node_time_algo_l:
         df = pd.read_csv('../logs/%d_flows_%d_s_%s_algo' % tup,
-                         names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
+                         names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw', 'retries'])
         df['endtime'] = df['endtime'] - df['endtime'].min() + 1
         dfs_demands.append((df, blt_link_cap_mb / num_nodes / tup[0]))
 
@@ -183,7 +183,7 @@ def get_dfs_and_demands(blt_link_cap_mb: float, flows_per_node_time_algo_l: List
 
 def get_df_custom(filepath: str, demand: float):
     df = pd.read_csv(filepath,
-                     names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw'])
+                     names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw', 'retries'])
     df['endtime'] = df['endtime'] - df['endtime'].min() + 1
 
     return (df, demand)
@@ -203,19 +203,21 @@ def main():
 
     dfs_demands = get_dfs_and_demands(btl_link_cap_mb, flows_per_node_time_algo_l, num_nodes)
 
-    for df_demand, flows_per_node in zip(dfs_demands, map(lambda x: x[0], flows_per_node_time_algo_l)):
-        df, demand = df_demand
-        plot_line_graph(df, demand, True, flow_count=num_nodes * flows_per_node, trim=True, top=2, bot=2, mid=2)
+    # for df_demand, flows_per_node in zip(dfs_demands, map(lambda x: x[0], flows_per_node_time_algo_l)):
+    #     df, demand = df_demand
+    #     plot_line_graph(df, demand, True, flow_count=num_nodes * flows_per_node, trim=True, top=2, bot=2, mid=2)
 
         # plot_link_utilization(df, 60, btl_link_cap_mb)
 
         # plot_hist(get_avg_gprs(df), False, demand)
         # plot_hist(get_avg_gprs(df), True, demand)
 
-    plot_jfis({int(btl_link_cap_mb / demand): df for df, demand in dfs_demands})
-    plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
+    # plot_jfis({int(btl_link_cap_mb / demand): df for df, demand in dfs_demands})
+    plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, False, btl_link_cap_mb,
                            cols_num=2)
-    plot_multiple_bw_util([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb,
-                          cols_num=2)
+    # plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
+    #                        cols_num=2)
+    # plot_multiple_bw_util([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb,
+    #                       cols_num=2)
 
 main()
