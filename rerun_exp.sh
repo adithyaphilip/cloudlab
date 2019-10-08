@@ -1,6 +1,6 @@
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ];
   then
-    echo "Usage: rerun_exp.sh num_flows test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side"
+    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side"
     exit 1
 fi
 
@@ -34,4 +34,4 @@ parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_P
 echo "Merging results from clients"
 cat iperf3_log_parsed* > iperf3_log_parsed_merged
 git checkout -b logs_$1_flows_$2_s_$3_algo && git add iperf3_log_parsed* && git commit -m "added logs" \
-&& git push -f origin logs_$1_flows_$2_s_$3_algo && git checkout master && git branch -D logs_$1_flows_$2_s_$3_algo
+&& git push -f origin logs_$1_flows_$2_s_$3_algo && git checkout master && git branch -D logs_$4_nodes_$1_flows_$2_s_$3_algo
