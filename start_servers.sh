@@ -9,7 +9,7 @@ cat $SERVER_LIST_FILE
 
 echo "Setting Netem delay on servers to $NETEM_DELAY_MS ms"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h  $SERVER_LIST_FILE \
-"sudo tc qdisc del dev eno50 root;sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS""ms";
+"sudo tc qdisc del dev eno50 root;sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS""ms limit 100000000";
 echo "Killing existing iperf processes on all servers"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $TOT_SERVER_LIST_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
