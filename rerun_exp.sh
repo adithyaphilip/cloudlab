@@ -6,6 +6,7 @@ fi
 
 IP_PREFIX=192.168.1.
 CLIENT_PSSH_FILE=hosts_file_pssh
+CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo
 
@@ -28,7 +29,7 @@ echo "Using following clients:"
 cat $CLIENT_PSSH_FILE
 
 echo "Killing existing iPerf processes on clients"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE "cd cloudlab; git pull; bash startup.sh; sudo python3 main.py $1 $2 $3 2>&1 | sudo tee main_combined.out"
 # 'cd cloudlab && git pull && sudo python3 main.py 2> main_err > main_out'
