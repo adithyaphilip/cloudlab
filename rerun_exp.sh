@@ -7,6 +7,7 @@ fi
 IP_PREFIX=192.168.1.
 CLIENT_PSSH_FILE=hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
+GIT_BRANCH_NAME=logs_$1_flows_$2_s_$3_algo
 
 # just to ensure the credential store has our password
 git config credential.helper store
@@ -33,5 +34,5 @@ parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_P
 # 'cd cloudlab && git pull && sudo python3 main.py 2> main_err > main_out'
 echo "Merging results from clients"
 cat iperf3_log_parsed* > iperf3_log_parsed_merged
-git checkout -b logs_$1_flows_$2_s_$3_algo && git add iperf3_log_parsed* && git commit -m "added logs" \
-&& git push -f origin logs_$1_flows_$2_s_$3_algo && git checkout master && git branch -D logs_$4_nodes_$1_flows_$2_s_$3_algo
+git checkout -b $GIT_BRANCH_NAME && git add iperf3_log_parsed* && git commit -m "added logs" \
+&& git push -f origin $GIT_BRANCH_NAME && git checkout master && git branch -D $GIT_BRANCH_NAME
