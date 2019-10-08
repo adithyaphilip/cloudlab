@@ -17,6 +17,7 @@ git checkout -b temp_verify && git push -fu origin temp_verify && git checkout m
 echo "Configuring client list"
 rm $CLIENT_PSSH_FILE
 for i in $(seq 1 $4); do echo $IP_PREFIX$i >> $CLIENT_PSSH_FILE; done
+for i in $(seq 1 $5); do echo $IP_PREFIX$i >> $CLIENT_TOT_PSSH_FILE; done
 
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE
