@@ -8,6 +8,7 @@ IP_PREFIX=192.168.1.
 CLIENT_PSSH_FILE=hosts_file_pssh
 CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
+TOT_SERVER_PSSH_FILE=totservers_file_pssh
 GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo
 
 # just to ensure the credential store has our password
@@ -22,7 +23,9 @@ for i in $(seq 1 $5); do echo $IP_PREFIX$i >> $CLIENT_TOT_PSSH_FILE; done
 
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE
+rm $TOT_SERVER_PSSH_FILE
 for i in $(seq $(($5 + 1)) $(($5 + $4)) ); do echo $IP_PREFIX$i >> $SERVER_PSSH_FILE; done
+for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_PSSH_FILE; done
 
 echo "Starting servers"
 ./start_servers.sh
