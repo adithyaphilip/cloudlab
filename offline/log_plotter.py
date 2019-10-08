@@ -198,10 +198,11 @@ def get_df_custom(filepath: str, demand: float):
 
 
 def main():
+    print('Starting!')
     btl_link_cap_mb = 1280  # mega BYTES
-    nodes_flows_per_node_time_algo_l = [(5, 6000, 600, 'reno'), (10, 3000, 600, 'reno'), (15, 2000, 600, 'reno'),
-                                        (5, 3000, 600, 'reno'), (10, 1500, 600, 'reno'), (15, 1000, 600, 'reno'),
-                                        (5, 300, 600, 'reno'), (10, 150, 600, 'reno'), (15, 100, 600, 'reno')]
+    nodes_flows_per_node_time_algo_l = [(5, 6000, 600, 'reno'), (10, 3000, 600, 'reno'), (15, 2000, 600, 'reno'),]
+                                        # (5, 3000, 600, 'reno'), (10, 1500, 600, 'reno'), (15, 1000, 600, 'reno'),
+                                        # (5, 300, 600, 'reno'), (10, 150, 600, 'reno'), (15, 100, 600, 'reno')]
     # nodes_flows_per_node_time_algo_l = [(5, 200, 600, 'reno'), (5, 400, 600, 'reno'), (5, 1000, 600, 'reno'),
     #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic'),
