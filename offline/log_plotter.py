@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 import math
+import itertools
 
 import offline.metric_calc as metric_calc
 
@@ -23,8 +24,9 @@ def trim_flow_times(start_offset_s, end_offset_s, df: pd.DataFrame):
 
 
 # gprs - goodput rates
-def get_avg_gprs(df: pd.DataFrame):
-    return df.groupby(by=["ip", "socket"]).apply(lambda rows: rows['datasize'].sum() / rows['interval'].sum())
+def get_avg_gprs(df: pd.DataFrame, host_level: bool):
+    df_grp = df.groupby(by=["ip"]) if host_level else df.groupby(by=["ip", "socket"])
+    return df_grp.apply(lambda rows: rows['datasize'].sum() / (rows['endtime'].max() - rows['endtime'].min()))
 
 
 def get_tot_avg_gpr(df: pd.DataFrame):
@@ -117,7 +119,7 @@ def plot_multiple_exp_hist(flow_counts_ordered: List[int],
     ctr = 0
     for df, demand in dfs_demands:
         df_trimmed = trim_flow_times(60, 60, df)
-        avg_bws = get_avg_gprs(df_trimmed)
+        avg_bws = get_avg_gprs(df_trimmed, False)
         trace = get_hist(avg_bws, cumulative, demand)
         avg_gpr_ratio = get_tot_avg_gpr(df) / btl_bw_mb
         trace2 = go.Scatter(x=[avg_gpr_ratio, avg_gpr_ratio], y=[0, 100], name='Overall Goodput Rate', mode='lines')
@@ -155,28 +157,34 @@ def plot_multiple_bw_util(flow_counts_ordered: List[int],
     fig.show()
 
 
-def plot_jfis(flows_to_df: Dict[int, pd.DataFrame]):
-    ordered_jfis = [metric_calc.get_jfi(get_avg_gprs(trim_flow_times(60, 60, df)))
-                    for _, df in sorted(flows_to_df.items(), key=lambda x: x[0])]
-
+def plot_jfis(keys_to_flows_to_df: Dict[str, Dict[int, pd.DataFrame]]):
     fig = go.Figure()
-
-    fig.add_trace(go.Scatter(x=sorted(flows_to_df), y=ordered_jfis))
     fig.update_xaxes(title_text='flow count')
     fig.update_yaxes(title_text='JFI', range=[0, 1])
-
     fig.update_layout(title_text='JFI vs flow count')
+
+    for key, flows_to_df in keys_to_flows_to_df.items():
+        dfs_trimmed_sorted = [trim_flow_times(60, 60, df) for _, df in sorted(flows_to_df.items(), key=lambda x: x[0])]
+        # JFI where every flow is an individual entity
+        ordered_jfis = [metric_calc.get_jfi(get_avg_gprs(df, False)) for df in dfs_trimmed_sorted]
+
+        # JFI where every host is a single entity (we group the flows under each host)
+        ordered_jfis_hosts = [metric_calc.get_jfi(get_avg_gprs(df, True)) for df in dfs_trimmed_sorted]
+
+        fig.add_trace(go.Scatter(x=sorted(flows_to_df), y=ordered_jfis, name=key))
+        fig.add_trace(go.Scatter(x=sorted(flows_to_df), y=ordered_jfis_hosts, name=key + "_hosts"))
+
     fig.show()
 
 
-def get_dfs_and_demands(blt_link_cap_mb: float, flows_per_node_time_algo_l: List[Tuple[int, int, str]], num_nodes: int):
+def get_dfs_and_demands(blt_link_cap_mb: float, nodes_flows_per_node_time_algo_l: List[Tuple[int, int, int, str]]):
     dfs_demands = []
 
-    for tup in flows_per_node_time_algo_l:
-        df = pd.read_csv('../logs/%d_flows_%d_s_%s_algo' % tup,
+    for tup in nodes_flows_per_node_time_algo_l:
+        df = pd.read_csv('../logs/%d_nodes_%d_flows_%d_s_%s_algo' % tup,
                          names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw', 'retries'])
         df['endtime'] = df['endtime'] - df['endtime'].min() + 1
-        dfs_demands.append((df, blt_link_cap_mb / num_nodes / tup[0]))
+        dfs_demands.append((df, blt_link_cap_mb / tup[0] / tup[1]))
 
     return dfs_demands
 
@@ -191,33 +199,39 @@ def get_df_custom(filepath: str, demand: float):
 
 def main():
     btl_link_cap_mb = 1280  # mega BYTES
-    num_nodes = 5
-    # flows_per_node_time_algo_l = [(8000, 600, 'cubic')]
-    flows_per_node_time_algo_l = [(200, 600, 'reno'), (400, 600, 'reno'), (1000, 600, 'reno'),
-                                  (2000, 600, 'reno'), (4000, 600, 'reno'), (8000, 600, 'reno')]
+    nodes_flows_per_node_time_algo_l = [(5, 6000, 600, 'reno'), (10, 3000, 600, 'reno'), (15, 2000, 600, 'reno'),
+                                        (5, 3000, 600, 'reno'), (10, 1500, 600, 'reno'), (15, 1000, 600, 'reno'),
+                                        (5, 300, 600, 'reno'), (10, 150, 600, 'reno'), (15, 100, 600, 'reno')]
+    # nodes_flows_per_node_time_algo_l = [(5, 200, 600, 'reno'), (5, 400, 600, 'reno'), (5, 1000, 600, 'reno'),
+    #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic'),
     #                               (200, 600, 'cubic'), (400, 600, 'cubic'), (1000, 600, 'cubic'),
     #                               (2000, 600, 'cubic'), (4000, 600, 'cubic'), (8000, 600, 'cubic')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic')]
 
-    dfs_demands = get_dfs_and_demands(btl_link_cap_mb, flows_per_node_time_algo_l, num_nodes)
+    dfs_demands = get_dfs_and_demands(btl_link_cap_mb, nodes_flows_per_node_time_algo_l)
 
     # for df_demand, flows_per_node in zip(dfs_demands, map(lambda x: x[0], flows_per_node_time_algo_l)):
     #     df, demand = df_demand
     #     plot_line_graph(df, demand, True, flow_count=num_nodes * flows_per_node, trim=True, top=2, bot=2, mid=2)
 
-        # plot_link_utilization(df, 60, btl_link_cap_mb)
+    #   plot_link_utilization(df, 60, btl_link_cap_mb)
 
-        # plot_hist(get_avg_gprs(df), False, demand)
-        # plot_hist(get_avg_gprs(df), True, demand)
+    #   plot_hist(get_avg_gprs(df), False, demand)
+    #   plot_hist(get_avg_gprs(df), True, demand)
 
-    # plot_jfis({int(btl_link_cap_mb / demand): df for df, demand in dfs_demands})
-    plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, False, btl_link_cap_mb,
+    plot_jfis(
+        {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
+         for nodes, grp
+         in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_l, dfs_demands), key=lambda x:x[0][0]), key=lambda x: x[0][0])
+         })
+    plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_l], dfs_demands, False, btl_link_cap_mb,
                            cols_num=2)
-    # plot_multiple_exp_hist([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
-    #                        cols_num=2)
-    # plot_multiple_bw_util([x[0] * num_nodes for x in flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb,
-    #                       cols_num=2)
+    plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
+                           cols_num=2)
+    plot_multiple_bw_util([x[1] * x[0] for x in nodes_flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb,
+                          cols_num=2)
+
 
 main()
