@@ -10,6 +10,7 @@ CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
 GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo
+NETEM_DELAY_MS=20
 
 # just to ensure the credential store has our password
 git config credential.helper store
@@ -33,6 +34,9 @@ echo "Starting servers"
 echo "Using following clients:"
 cat $CLIENT_PSSH_FILE
 
+echo "Adding netem to clients, since we use reverse iPerf now"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
+"sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS""ms limit 1000000000"
 echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
