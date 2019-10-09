@@ -42,9 +42,10 @@ echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
-echo "Running experiments on clients at $(TZ=EST5EDT date)"
+echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
 "cd cloudlab; git pull; bash startup.sh;"
+echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
 "sudo python3 main.py $1 $2 $3 2>&1 | sudo tee main_combined.out"
 # 'cd cloudlab && git pull && sudo python3 main.py 2> main_err > main_out'
