@@ -10,6 +10,8 @@ import itertools
 
 import offline.metric_calc as metric_calc
 
+TIME_S_TRIM = 120
+
 
 # TODO: This trims the first and last X seconds from the start and end of _each_ flow. We ideally want it to remove
 # logs from the start and end of any of the flows
@@ -37,7 +39,7 @@ def plot_line_graph(df: pd.DataFrame, demand: float, selective: bool, flow_count
     fig = go.Figure()
 
     if trim:
-        df = trim_flow_times(60, 60, df)
+        df = trim_flow_times(TIME_S_TRIM, TIME_S_TRIM, df)
 
     df_grp = df.groupby(by=['ip', 'socket'])
 
@@ -118,7 +120,7 @@ def plot_multiple_exp_hist(flow_counts_ordered: List[int],
 
     ctr = 0
     for df, demand in dfs_demands:
-        df_trimmed = trim_flow_times(60, 60, df)
+        df_trimmed = trim_flow_times(TIME_S_TRIM, TIME_S_TRIM, df)
         avg_bws = get_avg_gprs(df_trimmed, False)
         trace = get_hist(avg_bws, cumulative, demand)
         avg_gpr_ratio = get_tot_avg_gpr(df) / btl_bw_mb
@@ -164,7 +166,8 @@ def plot_jfis(keys_to_flows_to_df: Dict[str, Dict[int, pd.DataFrame]]):
     fig.update_layout(title_text='JFI vs flow count')
 
     for key, flows_to_df in keys_to_flows_to_df.items():
-        dfs_trimmed_sorted = [trim_flow_times(60, 60, df) for _, df in sorted(flows_to_df.items(), key=lambda x: x[0])]
+        dfs_trimmed_sorted = [trim_flow_times(TIME_S_TRIM, TIME_S_TRIM, df) for _, df in
+                              sorted(flows_to_df.items(), key=lambda x: x[0])]
         # JFI where every flow is an individual entity
         ordered_jfis = [metric_calc.get_jfi(get_avg_gprs(df, False)) for df in dfs_trimmed_sorted]
 
@@ -200,14 +203,22 @@ def get_df_custom(filepath: str, demand: float):
 def main():
     print('Starting!')
     btl_link_cap_mb = 1280  # mega BYTES
-    nodes_flows_per_node_time_algo_l = [(5, 6000, 600, 'reno'), (10, 3000, 600, 'reno'), (15, 2000, 600, 'reno'),]
-                                        # (5, 3000, 600, 'reno'), (10, 1500, 600, 'reno'), (15, 1000, 600, 'reno'),
-                                        # (5, 300, 600, 'reno'), (10, 150, 600, 'reno'), (15, 100, 600, 'reno')]
+    # nodes_flows_per_node_time_algo_l = [(5, 6000, 600, 'reno'), (10, 3000, 600, 'reno'), (15, 2000, 600, 'reno'),
+    #                                     (5, 3000, 600, 'reno'), (10, 1500, 600, 'reno'), (15, 1000, 600, 'reno'),
+    #                                     (5, 300, 600, 'reno'), (10, 150, 600, 'reno'), (15, 100, 600, 'reno')]
     # nodes_flows_per_node_time_algo_l = [(5, 200, 600, 'reno'), (5, 400, 600, 'reno'), (5, 1000, 600, 'reno'),
     #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
-    # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic'),
-    #                               (200, 600, 'cubic'), (400, 600, 'cubic'), (1000, 600, 'cubic'),
-    #                               (2000, 600, 'cubic'), (4000, 600, 'cubic'), (8000, 600, 'cubic')]
+
+    nodes_flows_per_node_time_algo_l = [(nodes, tot_flows // nodes, 600, 'reno')
+                                        for tot_flows in [30000, 15000, 6000, 1200, 600]
+                                        for nodes in [5, 10, 15]]
+
+    # nodes_flows_per_node_time_algo_l = [(1, 6000, 600, 'reno'), (2, 3000, 600, 'reno'),
+    #                                     (1, 4000, 600, 'reno'), (2, 2000, 600, 'reno'),
+    #                                     (1, 2000, 600, 'reno'), (2, 1000, 600, 'reno'),
+    #                                     (1, 1000, 600, 'reno'), (2, 500, 300, 'reno'), (1, 500, 600, 'reno'),
+    #                                     (2, 250, 300, 'reno')]
+    # nodes_flows_per_node_time_algo_l = [(1, 4000, 600, 'reno')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic')]
 
@@ -225,14 +236,15 @@ def main():
     plot_jfis(
         {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
          for nodes, grp
-         in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_l, dfs_demands), key=lambda x:x[0][0]), key=lambda x: x[0][0])
+         in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_l, dfs_demands), key=lambda x: x[0][0]),
+                              key=lambda x: x[0][0])
          })
     plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_l], dfs_demands, False, btl_link_cap_mb,
-                           cols_num=2)
+                           cols_num=3)
     plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_l], dfs_demands, True, btl_link_cap_mb,
-                           cols_num=2)
+                           cols_num=3)
     plot_multiple_bw_util([x[1] * x[0] for x in nodes_flows_per_node_time_algo_l], dfs_demands, btl_link_cap_mb,
-                          cols_num=2)
+                          cols_num=3)
 
 
 main()
