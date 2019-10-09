@@ -20,7 +20,7 @@ def parse_iperf_json(own_ip: str, op_filepath: str):
                 data_mb = stream["bytes"] / (1024 ** 2)
                 end_time = stream["end"] + start_time
                 interval_s = stream["seconds"]
-                retransmits = stream["retransmits"]
+                retransmits = "n/a"
                 bw = data_mb / interval_s
                 rows.append((own_ip, sock_num, end_time, data_mb, interval_s, bw, retransmits))
 
