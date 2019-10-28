@@ -10,7 +10,7 @@ import itertools
 
 import offline.metric_calc as metric_calc
 
-TIME_S_TRIM = 120
+TIME_S_TRIM = 60
 
 
 # TODO: This trims the first and last X seconds from the start and end of _each_ flow. We ideally want it to remove
@@ -28,11 +28,16 @@ def trim_flow_times(start_offset_s, end_offset_s, df: pd.DataFrame):
 # gprs - goodput rates
 def get_avg_gprs(df: pd.DataFrame, host_level: bool):
     df_grp = df.groupby(by=["ip"]) if host_level else df.groupby(by=["ip", "socket"])
-    return df_grp.apply(lambda rows: rows['datasize'].sum() / (rows['endtime'].max() - rows['endtime'].min()))
+    return df_grp.apply(
+        lambda rows: rows['datasize'].sum() / (
+                    rows['endtime'].max() - rows['endtime'].min())) if host_level else df_grp.apply(
+        lambda rows: rows['datasize'].sum() / rows['interval'].sum())
 
 
 def get_tot_avg_gpr(df: pd.DataFrame):
-    return df['datasize'].sum() / (df['endtime'].max() - df['endtime'].min())
+    tot_data = df['datasize'].sum()
+    tot_time = df['endtime'].max() - df['endtime'].min()
+    return tot_data / tot_time
 
 
 def plot_line_graph(df: pd.DataFrame, demand: float, selective: bool, flow_count, trim=False, top=10, mid=10, bot=10):
@@ -123,7 +128,7 @@ def plot_multiple_exp_hist(flow_counts_ordered: List[int],
         df_trimmed = trim_flow_times(TIME_S_TRIM, TIME_S_TRIM, df)
         avg_bws = get_avg_gprs(df_trimmed, False)
         trace = get_hist(avg_bws, cumulative, demand)
-        avg_gpr_ratio = get_tot_avg_gpr(df) / btl_bw_mb
+        avg_gpr_ratio = get_tot_avg_gpr(df_trimmed) / btl_bw_mb
         trace2 = go.Scatter(x=[avg_gpr_ratio, avg_gpr_ratio], y=[0, 100], name='Overall Goodput Rate', mode='lines')
 
         row, col = ctr // cols_num + 1, ctr % cols_num + 1
@@ -184,9 +189,9 @@ def get_dfs_and_demands(blt_link_cap_mb: float, nodes_flows_per_node_time_algo_l
     dfs_demands = []
 
     for tup in nodes_flows_per_node_time_algo_l:
-        df = pd.read_csv('../logs/%d_nodes_%d_flows_%d_s_%s_algo' % tup,
+        df = pd.read_csv('../logs/%d_nodes_%d_flows_%d_s_%s_algo_rev' % tup,
                          names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw', 'retries'])
-        df['endtime'] = df['endtime'] - df['endtime'].min() + 1
+        df['endtime'] = df['endtime'] - df['endtime'].min() + 20
         dfs_demands.append((df, blt_link_cap_mb / tup[0] / tup[1]))
 
     return dfs_demands
@@ -210,8 +215,11 @@ def main():
     #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
 
     nodes_flows_per_node_time_algo_l = [(nodes, tot_flows // nodes, 600, 'reno')
-                                        for tot_flows in [30000, 15000, 6000, 1200, 600]
+                                        for tot_flows in [30000, 6000, 1200, 600]
                                         for nodes in [5, 10, 15]]
+    # nodes_flows_per_node_time_algo_l = [(nodes, tot_flows // nodes, 600, 'reno')
+    #                                     for tot_flows in [30000]
+    #                                     for nodes in [10]]
 
     # nodes_flows_per_node_time_algo_l = [(1, 6000, 600, 'reno'), (2, 3000, 600, 'reno'),
     #                                     (1, 4000, 600, 'reno'), (2, 2000, 600, 'reno'),
