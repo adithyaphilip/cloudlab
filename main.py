@@ -38,6 +38,7 @@ def set_consts():
     consts.N_FLOWS = int(sys.argv[1])
     consts.TEST_TIME_S = int(sys.argv[2])
     consts.CONGESTION_ALGO = sys.argv[3]
+    consts.COUNT_PER_SIDE = int(sys.argv[4])
 
 
 def main():

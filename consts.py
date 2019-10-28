@@ -19,8 +19,8 @@ IPERF_SERVER_BASE_PORT = 6001
 IPERF_MAX_CONN_PER_CLIENT = 100
 
 IP_PREFIX = "192.168.1." if MODE == Mode.PROD else "127.0.0."
-N_FLOWS = 2 if MODE == Mode.PROD else 2
-TEST_TIME_S = 600
+N_FLOWS = 2 if MODE == Mode.PROD else 2  # overridden in main.py via command line arguments
+TEST_TIME_S = 600  # overridden in main.py via command line arguments
 IPERF_LOG_INTERVAL_S = 20
-COUNT_PER_SIDE = 15
-CONGESTION_ALGO = 'cubic'
+COUNT_PER_SIDE = 15  # overridden in main.py via command line arguments
+CONGESTION_ALGO = 'cubic'  # overridden in main.py via command line arguments

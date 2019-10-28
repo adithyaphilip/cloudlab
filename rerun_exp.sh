@@ -55,7 +55,7 @@ parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_F
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"cd cloudlab; sudo python3 main.py $1 $2 $3 2>&1 | sudo tee main_combined.out"
+"cd cloudlab; sudo python3 main.py $1 $2 $3 $5 2>&1 | sudo tee main_combined.out"
 # 'cd cloudlab && git pull && sudo python3 main.py 2> main_err > main_out'
 
 echo "Merging results from clients"
