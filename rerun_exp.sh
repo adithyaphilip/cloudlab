@@ -19,6 +19,9 @@ for trial in $(seq 1 $6)
 do
 GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo_rev_$trial
 
+echo Running with $1 flows per node for $2 seconds with $3 CCA using $4 out of $5 nodes per side, trial $trial
+echo Using Git Branch $GIT_BRANCH_NAME
+
 echo "Configuring client list"
 rm $CLIENT_PSSH_FILE
 rm $CLIENT_TOT_PSSH_FILE
