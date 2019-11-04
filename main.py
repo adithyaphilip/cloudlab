@@ -65,8 +65,8 @@ def main():
         left_hand.start_iperf(target_ip)
 
         log_parser.parse_iperf_json(own_ip, consts.LOG_PARSED_FILEPATH + "_" + own_ip)
-        subprocess.call(
-            'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
+        subprocess.check_call(
+            'sleep 60; scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
             % (consts.LOG_PARSED_FILEPATH + "_" + own_ip), shell=True)
 
 

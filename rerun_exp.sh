@@ -9,7 +9,7 @@ CLIENT_PSSH_FILE=hosts_file_pssh
 CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
-NETEM_DELAY_MS=20
+NETEM_DELAY_MS=200
 
 # just to ensure the credential store has our password
 git config credential.helper store
