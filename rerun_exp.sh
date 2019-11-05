@@ -1,15 +1,18 @@
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ];
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ] || [ -z "$8" ] || [ -z "$9" ];
   then
-    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms"
+    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms_1 netem_delay_ms_2 delay_2_nodes"
     exit 1
 fi
 
 IP_PREFIX=192.168.1.
 CLIENT_PSSH_FILE=hosts_file_pssh
 CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
+CLIENT_DELAY_2_PSSH_FILE=hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
-NETEM_DELAY_MS=$7
+NETEM_DELAY_MS_1=$7
+NETEM_DELAY_MS_2=$8
+NETEM_DELAY_2_NODES=$9
 
 # just to ensure the credential store has our password
 git config credential.helper store
@@ -32,16 +35,21 @@ fi
 echo "Configuring client list"
 rm $CLIENT_PSSH_FILE
 rm $CLIENT_TOT_PSSH_FILE
+rm $CLIENT_DELAY_2_PSSH_FILE
 for i in $(seq 1 $4); do echo $IP_PREFIX$i >> $CLIENT_PSSH_FILE; done
 for i in $(seq 1 $5); do echo $IP_PREFIX$i >> $CLIENT_TOT_PSSH_FILE; done
-
+for i in $(seq 1 $9); do echo $IP_PREFIX$i >> $CLIENT_DELAY_2_PSSH_FILE; done
 
 echo "Using following clients:"
 cat $CLIENT_PSSH_FILE
 
 echo "Adding netem to clients, since we use reverse iPerf now"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS""ms limit 1000000000"
+"sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
+
+echo "Setting specified number clients to delay type 2 with $NETEM_DELAY_MS_2 delay"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_DELAY_2_PSSH_FILE \
+"sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS_2""ms limit 1000000000"
 
 echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
