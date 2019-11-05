@@ -7,7 +7,7 @@ fi
 IP_PREFIX=192.168.1.
 CLIENT_PSSH_FILE=hosts_file_pssh
 CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
-CLIENT_DELAY_2_PSSH_FILE=hosts_file_pssh
+CLIENT_DELAY_2_PSSH_FILE=delay_2_hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
 NETEM_DELAY_MS_1=$7
@@ -38,7 +38,7 @@ rm $CLIENT_TOT_PSSH_FILE
 rm $CLIENT_DELAY_2_PSSH_FILE
 for i in $(seq 1 $4); do echo $IP_PREFIX$i >> $CLIENT_PSSH_FILE; done
 for i in $(seq 1 $5); do echo $IP_PREFIX$i >> $CLIENT_TOT_PSSH_FILE; done
-for i in $(seq 1 $9); do echo $IP_PREFIX$i >> $CLIENT_DELAY_2_PSSH_FILE; done
+for i in $(seq 1 $NETEM_DELAY_2_NODES); do echo $IP_PREFIX$i >> $CLIENT_DELAY_2_PSSH_FILE; done
 
 echo "Using following clients:"
 cat $CLIENT_PSSH_FILE
