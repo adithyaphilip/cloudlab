@@ -66,6 +66,10 @@ def main():
 
         log_parser.parse_iperf_json(own_ip, consts.LOG_PARSED_FILEPATH + "_" + own_ip)
 
+        if node_num == 1:
+            # we're the controller, so we don't need to SCP  the logs to ourself. We're done here.
+            return
+
         # keep trying to SCP until we are successful
         while subprocess.call(
             'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -v -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
