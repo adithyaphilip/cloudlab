@@ -68,7 +68,7 @@ def main():
 
         # keep trying to SCP until we are successful
         while subprocess.check_call(
-            'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
+            'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -v -i /users/aphilip/.ssh/id_rsa %s aphilip@192.168.1.1:/users/aphilip/cloudlab'
             % (consts.LOG_PARSED_FILEPATH + "_" + own_ip), shell=True) != 0:
             pass
 
