@@ -20,7 +20,7 @@ git checkout -b temp_verify && git push -fu origin temp_verify && git checkout m
 
 for trial in $(seq 1 $6)
 do
-GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo_rev_"$trial"_trial_"$NETEM_DELAY_MS_1"_nm1_"$NETEM_DELAY_MS_2"_nm2_"$NETEM_DELAY_2_NODES"_delayed
+GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo_rev_"$NETEM_DELAY_MS_1"_nm1_"$NETEM_DELAY_MS_2"_nm2_"$NETEM_DELAY_2_NODES"_delayed_$trial
 
 echo Running with $1 flows per node for $2 seconds with $3 CCA using $4 out of $5 nodes per side, trial $trial
 echo Using Git Branch $GIT_BRANCH_NAME

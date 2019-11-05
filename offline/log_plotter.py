@@ -259,9 +259,9 @@ def main():
     #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
 
     nodes_flows_per_node_time_algo_trial_l = [(nodes, tot_flows // nodes, 600, 'reno', trial)
-                                              for tot_flows in [90000]
+                                              for tot_flows in [30000]
                                               for nodes in [15]
-                                              for trial in range(1, 1 + 1)]
+                                              for trial in range(1, 1 + 3)]
 
     # nodes_flows_per_node_time_algo_trial_l = list(map(lambda x: (*x[0], x[1]), zip([(nodes, tot_flows // nodes, 600, 'reno')
     #                                           for tot_flows in [3000, 12000, 30000]

@@ -1,16 +1,25 @@
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ]
   then
-    echo "Usage: fetch_logs_set.sh time_run congestion_algo num_trials"
+    echo "Usage: fetch_logs_set.sh time_run congestion_algo num_trials netem_delay_1 netem_delay_2"
     exit 1
 fi
 
 read -p "Enter total number of flows one after the other : " -a flow_list
 read -p "Enter total number of nodes to use one after the other: " -a node_list
+read -p "Enter total number of delay 2 nodes one after the other: " -a delay_2_counts
 
-for flows in ${flow_list[@]}
+for count in ${delay_2_counts[@]}
 do
-  for nodes in ${node_list[@]}
+  for flows in ${flow_list[@]}
   do
-    ./fetch_logs.sh $((flows/nodes)) $1 $2 $nodes $3
+    for nodes in ${node_list[@]}
+    do
+      ./fetch_logs.sh $((flows/nodes)) $1 $2 $nodes $3 $4 $5 $count
+      if [ $? -gt 0 ]
+      then
+        echo "ERROR reported by fetch_logs.sh, exiting"
+        exit 1
+      fi
+    done
   done
 done
