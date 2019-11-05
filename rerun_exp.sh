@@ -68,8 +68,7 @@ parallel-ssh -t 0 -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_P
 "cd cloudlab; sudo python3 main.py $1 $2 $3 $5 2>&1 | sudo tee main_combined.out"
 # 'cd cloudlab && git pull && sudo python3 main.py 2> main_err > main_out'
 
-echo "Merging results from clients"
-cat iperf3_log_parsed* > iperf3_log_parsed_merged
+echo "Uploading results from clients"
 git checkout -b $GIT_BRANCH_NAME && git add iperf3_log_parsed* && git commit -m "added logs" \
 && git push -f origin $GIT_BRANCH_NAME && git checkout master && git branch -D $GIT_BRANCH_NAME
 
