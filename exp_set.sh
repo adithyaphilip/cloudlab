@@ -6,12 +6,16 @@ fi
 
 read -p "Enter total number of flows one after the other : " -a flow_list
 read -p "Enter total number of nodes to use one after the other: " -a node_list
+read -p "Enter netem RTT delays one after the other: " -a delay_list
 
-for flows in ${flow_list[@]}
+for delay in ${delay_list[@]}
 do
-  for nodes in ${node_list[@]}
+  for flows in ${flow_list[@]}
   do
-    flow_per_node=$((flows / nodes))
-    ./rerun_exp.sh $flow_per_node $1 $2 $nodes $3 $4
+    for nodes in ${node_list[@]}
+    do
+      flow_per_node=$((flows / nodes))
+      ./rerun_exp.sh $flow_per_node $1 $2 $nodes $3 $4 $delay
+    done
   done
 done

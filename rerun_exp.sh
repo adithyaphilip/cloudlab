@@ -1,6 +1,6 @@
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ];
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ];
   then
-    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat"
+    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms"
     exit 1
 fi
 
@@ -9,7 +9,7 @@ CLIENT_PSSH_FILE=hosts_file_pssh
 CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
-NETEM_DELAY_MS=200
+NETEM_DELAY_MS=$7
 
 # just to ensure the credential store has our password
 git config credential.helper store

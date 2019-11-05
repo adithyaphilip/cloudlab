@@ -258,14 +258,14 @@ def main():
     # nodes_flows_per_node_time_algo_l = [(5, 200, 600, 'reno'), (5, 400, 600, 'reno'), (5, 1000, 600, 'reno'),
     #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
 
-    # nodes_flows_per_node_time_algo_trial_l = [(nodes, tot_flows // nodes, 600, 'reno', trial)
-    #                                           for tot_flows in [30000]
-    #                                           for nodes in [15]
-    #                                           for trial in range(1, 1 + 2)]
+    nodes_flows_per_node_time_algo_trial_l = [(nodes, tot_flows // nodes, 600, 'reno', trial)
+                                              for tot_flows in [30000]
+                                              for nodes in [15]
+                                              for trial in range(1, 1 + 3)]
 
-    nodes_flows_per_node_time_algo_trial_l = list(map(lambda x: (*x[0], x[1]), zip([(nodes, tot_flows // nodes, 600, 'reno')
-                                              for tot_flows in [3000, 12000, 30000]
-                                              for nodes in [5, 10, 15]], [2, 1, 1, 4, 1, 1, 3, 2, 1])))
+    # nodes_flows_per_node_time_algo_trial_l = list(map(lambda x: (*x[0], x[1]), zip([(nodes, tot_flows // nodes, 600, 'reno')
+    #                                           for tot_flows in [3000, 12000, 30000]
+    #                                           for nodes in [5, 10, 15]], [2, 1, 1, 4, 1, 1, 3, 2, 1])))
 
     # nodes_flows_per_node_time_algo_l = [(nodes, tot_flows // nodes, 600, 'reno')
     #                                     for tot_flows in [30000]
@@ -291,14 +291,14 @@ def main():
     #   plot_hist(get_avg_gprs(df), False, demand)
     #   plot_hist(get_avg_gprs(df), True, demand)
 
-    # plot_jfis_trials([tup[0] for tup in dfs_demands])
-
-    plot_jfis(
-        {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
-         for nodes, grp
-         in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_trial_l, dfs_demands), key=lambda x: x[0][0]),
-                              key=lambda x: x[0][0])
-         })
+    plot_jfis_trials([tup[0] for tup in dfs_demands])
+    #
+    # plot_jfis(
+    #     {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
+    #      for nodes, grp
+    #      in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_trial_l, dfs_demands), key=lambda x: x[0][0]),
+    #                           key=lambda x: x[0][0])
+    #      })
 
     plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_trial_l], dfs_demands, False,
                            btl_link_cap_mb,
@@ -308,13 +308,13 @@ def main():
                            cols_num=3)
     plot_multiple_bw_util([x[1] * x[0] for x in nodes_flows_per_node_time_algo_trial_l], dfs_demands, btl_link_cap_mb,
                           cols_num=3)
-
-    plot_avg_bw_util(
-        {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
-         for nodes, grp
-         in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_trial_l, dfs_demands), key=lambda x: x[0][0]),
-                              key=lambda x: x[0][0])
-         }, btl_link_cap_mb)
+    #
+    # plot_avg_bw_util(
+    #     {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
+    #      for nodes, grp
+    #      in itertools.groupby(sorted(zip(nodes_flows_per_node_time_algo_trial_l, dfs_demands), key=lambda x: x[0][0]),
+    #                           key=lambda x: x[0][0])
+    #      }, btl_link_cap_mb)
 
     # plot_link_utilization(dfs_demands[0][0], 60, btl_link_cap_mb)
 
