@@ -1,6 +1,7 @@
 sudo apt-get update
 sudo apt-get install -y iperf3
 sudo apt-get install -y python3-pip
+sudo apt-get install -y nload
 sudo pip3 install netifaces
 
 sudo bash setup_ssh.sh
