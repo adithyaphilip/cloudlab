@@ -40,6 +40,9 @@ echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
+echo "Waiting 30s just because"
+sleep 30
+
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE
 rm $TOT_SERVER_PSSH_FILE
