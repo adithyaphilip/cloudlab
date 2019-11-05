@@ -1,9 +1,5 @@
 #!/bin/sh
 
-# this particular line actually only matters for whichever node ends up being the controller.
-# By default only 10 nodes can simultaneously wait for authentication, so sometimes logs were not copied.
-echo 'MaxStartups 100' >> /etc/ssh/sshd_config
-
 HOME=/users/aphilip
 # Create the user SSH directory, just in case.
 mkdir $HOME/.ssh && chmod 700 $HOME/.ssh

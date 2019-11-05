@@ -22,6 +22,13 @@ GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo_rev_$trial
 echo Running with $1 flows per node for $2 seconds with $3 CCA using $4 out of $5 nodes per side, trial $trial
 echo Using Git Branch $GIT_BRANCH_NAME
 
+# By default only 10 nodes can simultaneously wait for authentication, so sometimes logs were not copied.
+if [ -z "$(cat /etc/ssh/sshd_config | grep 'MaxStartups 100')" ]
+then
+  echo "Setting MaxStartups to 100 for SSH"
+  echo 'MaxStartups 100' >> /etc/ssh/sshd_config
+fi
+
 echo "Configuring client list"
 rm $CLIENT_PSSH_FILE
 rm $CLIENT_TOT_PSSH_FILE
