@@ -47,7 +47,7 @@ echo "Adding netem to clients, since we use reverse iPerf now"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
 "sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
 
-echo "Setting specified number clients to delay type 2 with $NETEM_DELAY_MS_2 delay"
+echo "Setting specified number clients ($9) to delay type 2 with $NETEM_DELAY_MS_2 delay"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_DELAY_2_PSSH_FILE \
 "sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS_2""ms limit 1000000000"
 
