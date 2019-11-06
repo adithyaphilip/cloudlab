@@ -7,10 +7,14 @@ import plotly.graph_objects as go
 import numpy as np
 import math
 import itertools
+import consts
 
 import offline.metric_calc as metric_calc
 
 TIME_S_TRIM = 120
+IND_TYPE2_COUNT = 6
+IND_FLOWS_PER_NODE = 1
+IND_NUM_NODES = 0
 
 
 # TODO: This trims the first and last X seconds from the start and end of _each_ flow. We ideally want it to remove
@@ -112,7 +116,7 @@ def get_hist(agg_bw_series: pd.DataFrame, cumulative: bool, demand_per_flow_mb: 
     trace = go.Histogram(x=agg_bw_series,
                          xbins=dict(start=0,
                                     size=0.05,
-                                    end=2),
+                                    end=max(2, agg_bw_series.max())),
                          cumulative_enabled=cumulative,
                          histnorm='percent',
                          marker=dict(color='rgb(25, 25, 100)'))
@@ -229,11 +233,12 @@ def plot_jfis_trials(dfs_l: List[pd.DataFrame]):
 
 
 def get_dfs_and_demands(blt_link_cap_mb: float,
-                        nodes_flows_per_node_time_algo_trial_l: List[Tuple[int, int, int, str, int]]):
+                        nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l: List[
+                            Tuple[int, int, int, str, int, int, int, int]]):
     dfs_demands = []
 
-    for tup in nodes_flows_per_node_time_algo_trial_l:
-        df = pd.read_csv('../logs/%d_nodes_%d_flows_%d_s_%s_algo_rev_%d' % tup,
+    for tup in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l:
+        df = pd.read_csv('../logs/%d_nodes_%d_flows_%d_s_%s_algo_rev_%d_nm1_%d_nm2_%d_delayed_%d' % tup,
                          names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw', 'retries'])
         df['endtime'] = df['endtime'] - df['endtime'].min() + 20
         dfs_demands.append((df, blt_link_cap_mb / tup[0] / tup[1]))
@@ -249,6 +254,114 @@ def get_df_custom(filepath: str, demand: float):
     return (df, demand)
 
 
+# Builds a dict that maps from key_index_list[0] -> key_index_list[1] -> key_index_list[2] until we get to the DF
+# index here refers to position of the key in the id_tup
+def get_dict_from_id_tups_dfs(key_index_list: List[int], id_tups_dfs: List):
+    key_index = key_index_list[0]
+    keys = np.unique(np.array(list(map(lambda x: x[0][key_index], id_tups_dfs))))
+
+    dict_here = {key: [id_tup_df for id_tup_df in id_tups_dfs if id_tup_df[0][key_index] == key] for key in keys}
+
+    if len(key_index_list) == 1:
+        return dict_here
+    else:
+        return {key: get_dict_from_id_tups_dfs(key_index_list[1:], val) for key, val in dict_here.items()}
+
+
+def split_df_by_rtt(df: pd.DataFrame, type2_count: int):
+    type2_ips = {consts.IP_PREFIX + str(i) for i in range(1, 1 + type2_count)}
+    mask = df["ip"].isin(list(type2_ips))
+    df_2 = df[mask]
+    df_1 = df[~mask]
+
+    return df_1, df_2
+
+
+def get_bw_by_rtt(df_trimmed: pd.DataFrame, type2_count: int, tot_count: int, fraction: bool):
+    df_1, df_2 = split_df_by_rtt(df_trimmed, type2_count)
+
+    avg_type2 = get_tot_avg_gpr(df_2) / type2_count
+    avg_type1 = get_tot_avg_gpr(df_1) / (tot_count - type2_count)
+
+    type2_frac = avg_type2 / (avg_type1 + avg_type2)
+    type1_frac = 1 - type2_frac
+
+    return type1_frac if fraction else avg_type1, type2_frac if fraction else avg_type2
+
+
+# Plots b/w per node for low RTT and high RTT nodes, and shows fraction of total goodput taken by each
+# id_tup_df: Tuple of the id tuple and the df
+# ASSUMPTION: Only 1 type2 RTT is being displayed, just variants of number of nodes with that RTT and number of flows
+def rtt_plot_bw_per_node(id_tup_dfs_trimmed: List, tot_nodes: int, fraction: bool):
+    type2_counts_to_id_tup_dfs = get_dict_from_id_tups_dfs([IND_TYPE2_COUNT], id_tup_dfs_trimmed)
+    fig = go.Figure()
+    fig.update_xaxes(title_text='Flow count')
+    fig.update_yaxes(title_text='Normalized Goodput Fraction', range=[0, 1])
+    fig.update_layout(title_text='Flow Count vs Normalized Goodput Fraction')
+
+    for type2_count, id_tup_dfs in type2_counts_to_id_tup_dfs.items():
+        bw_fracs_ordered_by_flows = [get_bw_by_rtt(id_tup_df[1], type2_count, tot_nodes, fraction)
+                                     for id_tup_df in sorted(id_tup_dfs, key=lambda x: x[0][IND_FLOWS_PER_NODE])]
+        type1_ordered_by_flows = list(map(lambda x: x[0], bw_fracs_ordered_by_flows))
+        type2_ordered_by_flows = list(map(lambda x: x[1], bw_fracs_ordered_by_flows))
+
+        fig.add_trace(go.Scatter(
+            x=sorted(map(lambda x: x[0][IND_FLOWS_PER_NODE] * x[0][IND_NUM_NODES], id_tup_dfs)),
+            y=type1_ordered_by_flows,
+            name="type1 - (%d type2)" % type2_count))
+        fig.add_trace(go.Scatter(
+            x=sorted(map(lambda x: x[0][IND_FLOWS_PER_NODE] * x[0][IND_NUM_NODES], id_tup_dfs)),
+            y=type2_ordered_by_flows,
+            name="type2 - (%d type2)" % type2_count))
+
+    fig.show()
+
+
+def gen_graphs_rtt_comp(base_rtt_ms: int, type2_rtt_ms: int, nodes: int, flow_list: List[int], type2_counts: List[int],
+                        cca: str,
+                        btl_link_cap_mb: int):
+    nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l = [
+        (nodes, tot_flows // nodes, 600, cca, base_rtt_ms, type2_rtt_ms, type2_count, 1)
+        for tot_flows in flow_list
+        for type2_count in type2_counts]
+
+    dfs_demands = get_dfs_and_demands(btl_link_cap_mb,
+                                      nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l)
+
+    plot_jfis(
+        {str(type2_count): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
+         for type2_count, grp
+         in itertools.groupby(
+            sorted(zip(nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l, dfs_demands),
+                   key=lambda x: x[0][IND_TYPE2_COUNT]),
+            key=lambda x: x[0][IND_TYPE2_COUNT])
+         })
+
+    plot_multiple_exp_hist([x[IND_FLOWS_PER_NODE] * x[IND_NUM_NODES]
+                            for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l],
+                           dfs_demands, False,
+                           btl_link_cap_mb,
+                           cols_num=2)
+    plot_multiple_exp_hist([x[IND_FLOWS_PER_NODE] * x[IND_NUM_NODES]
+                            for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l],
+                           dfs_demands, True,
+                           btl_link_cap_mb,
+                           cols_num=2)
+    plot_multiple_bw_util([x[IND_FLOWS_PER_NODE] * x[IND_NUM_NODES]
+                           for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l],
+                          dfs_demands, btl_link_cap_mb,
+                          cols_num=2)
+
+    id_tups_dfs_trimmed = list(zip(nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l,
+                                   map(lambda x: trim_flow_times(TIME_S_TRIM, TIME_S_TRIM, x[0]), dfs_demands)
+                                   ))
+    # id_tups_dfs = list(zip(nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l,
+    #                        map(lambda x: x[0], dfs_demands)
+    #                        ))
+    rtt_plot_bw_per_node(id_tups_dfs_trimmed, nodes, True)
+    rtt_plot_bw_per_node(id_tups_dfs_trimmed, nodes, False)
+
+
 def main():
     print('Starting!')
     btl_link_cap_mb = 1280  # mega BYTES
@@ -258,10 +371,10 @@ def main():
     # nodes_flows_per_node_time_algo_l = [(5, 200, 600, 'reno'), (5, 400, 600, 'reno'), (5, 1000, 600, 'reno'),
     #                               (5, 2000, 600, 'reno'), (5, 4000, 600, 'reno'), (5, 8000, 600, 'reno')]
 
-    nodes_flows_per_node_time_algo_trial_l = [(nodes, tot_flows // nodes, 600, 'reno', trial)
+    nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l = [(nodes, tot_flows // nodes, 600, 'reno', 20, 200, 0, trial)
                                               for tot_flows in [30000]
-                                              for nodes in [15]
-                                              for trial in range(1, 1 + 3)]
+                                              for nodes in [5]
+                                              for trial in range(1, 1 + 2)]
 
     # nodes_flows_per_node_time_algo_trial_l = list(map(lambda x: (*x[0], x[1]), zip([(nodes, tot_flows // nodes, 600, 'reno')
     #                                           for tot_flows in [3000, 12000, 30000]
@@ -280,7 +393,7 @@ def main():
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (10, 600, 'cubic'), (50, 600, 'cubic'), (100, 600, 'cubic')]
     # flows_per_node_time_algo_l = [(1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic'), (1, 600, 'cubic')]
 
-    dfs_demands = get_dfs_and_demands(btl_link_cap_mb, nodes_flows_per_node_time_algo_trial_l)
+    dfs_demands = get_dfs_and_demands(btl_link_cap_mb, nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l)
 
     # for df_demand, flows_per_node in zip(dfs_demands, map(lambda x: x[0], flows_per_node_time_algo_l)):
     #     df, demand = df_demand
@@ -300,13 +413,13 @@ def main():
     #                           key=lambda x: x[0][0])
     #      })
 
-    plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_trial_l], dfs_demands, False,
+    plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l], dfs_demands, False,
                            btl_link_cap_mb,
                            cols_num=3)
-    plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_trial_l], dfs_demands, True,
+    plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l], dfs_demands, True,
                            btl_link_cap_mb,
                            cols_num=3)
-    plot_multiple_bw_util([x[1] * x[0] for x in nodes_flows_per_node_time_algo_trial_l], dfs_demands, btl_link_cap_mb,
+    plot_multiple_bw_util([x[1] * x[0] for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l], dfs_demands, btl_link_cap_mb,
                           cols_num=3)
     #
     # plot_avg_bw_util(
@@ -318,5 +431,6 @@ def main():
 
     # plot_link_utilization(dfs_demands[0][0], 60, btl_link_cap_mb)
 
-
 main()
+# gen_graphs_rtt_comp(20, 200, 15, [3000, 15000, 30000], [0], "reno", 1280)
+# gen_graphs_rtt_comp(20, 200, 15, [3000, 15000, 30000, 60000], [8], "cubic", 1280)

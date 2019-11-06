@@ -30,6 +30,7 @@ if [ -z "$(cat /etc/ssh/sshd_config | grep 'MaxStartups 100')" ]
 then
   echo "Setting MaxStartups to 100 for SSH"
   echo 'MaxStartups 100' >> /etc/ssh/sshd_config
+  sudo service sshd restart
 fi
 
 echo "Configuring client list"
@@ -55,8 +56,8 @@ echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
-echo "Waiting 30s just because"
-sleep 30
+echo "Waiting 60s just because"
+sleep 60
 
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE

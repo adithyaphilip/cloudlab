@@ -13,8 +13,8 @@ echo "Killing existing iperf processes on all servers"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $TOT_SERVER_LIST_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
-echo "Waiting 30s just in case"
-sleep 30
+echo "Waiting 60s just in case"
+sleep 60
 
 echo "Starting servers, with port numbers $((BASE_PORT + 1)) through $((BASE_PORT + NUM_SERVERS_PER_NODE))"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
