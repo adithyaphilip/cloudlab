@@ -29,7 +29,7 @@ echo Using Git Branch $GIT_BRANCH_NAME
 if [ -z "$(cat /etc/ssh/sshd_config | grep 'MaxStartups 100')" ]
 then
   echo "Setting MaxStartups to 100 for SSH"
-  echo 'MaxStartups 100' >> /etc/ssh/sshd_config
+  echo 'MaxStartups 100' | sudo tee -a /etc/ssh/sshd_config > /dev/null
   sudo service sshd restart
 fi
 
