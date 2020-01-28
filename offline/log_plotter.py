@@ -8,6 +8,8 @@ import numpy as np
 import math
 import itertools
 import consts
+import os
+import sys
 
 import offline.metric_calc as metric_calc
 
@@ -19,7 +21,7 @@ IND_NUM_NODES = 0
 
 
 # TODO: This trims the first and last X seconds from the start and end of _each_ flow. We ideally want it to remove
-# logs from the start and end of any of the flows
+# logs from the start and end of any of the flows. NOTE: Doesn't this function already do this?
 def trim_flow_times(start_offset_s, end_offset_s, df: pd.DataFrame):
     min_time = df['endtime'].min()
     max_time = df['endtime'].max()
@@ -239,7 +241,11 @@ def get_dfs_and_demands(blt_link_cap_mb: float,
     dfs_demands = []
 
     for tup in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l:
-        df = pd.read_csv('../logs/%d_nodes_%d_flows_%d_s_%s_algo_rev_%d_nm1_%d_nm2_%d_delayed_%d' % tup,
+        filepath = '../logs/%d_nodes_%d_flows_%d_s_%s_algo_rev_%d_nm1_%d_nm2_%d_delayed_%d' % tup
+        if not os.path.exists(filepath):
+            print("ERROR: Could not find logfile %s, ABORT if unexpected!" % filepath, file=sys.stderr)
+            continue
+        df = pd.read_csv(filepath,
                          names=['ip', 'socket', 'endtime', 'datasize', 'interval', 'bw', 'retries'])
         df['endtime'] = df['endtime'] - df['endtime'].min() + 20
         dfs_demands.append((df, blt_link_cap_mb / tup[0] / tup[1]))
@@ -444,10 +450,11 @@ def main():
                                                   nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l)
                 # plot_jfis_trials([tup[0] for tup in dfs_demands], "%d flows %d ms RTT" % (tot_flows, delay))
 
-                plot_multiple_exp_hist([x[1] * x[0] for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l],
-                                       dfs_demands, False,
-                                       btl_link_cap_mb,
-                                       cols_num=3)
+                plot_multiple_exp_hist(
+                    [x[1] * x[0] for x in nodes_flows_per_node_time_algo_basertt_type2rtt_type2count_trial_l],
+                    dfs_demands, False,
+                    btl_link_cap_mb,
+                    cols_num=3)
     #
     # plot_jfis(
     #     {str(nodes): {int(btl_link_cap_mb / demand): df for df, demand in map(lambda x: x[1], grp)}
@@ -477,9 +484,9 @@ def main():
 
     # plot_link_utilization(dfs_demands[0][0], 60, btl_link_cap_mb)
 
-
-main()
-gen_graphs_rtt_uniform([5, 10, 20, 50, 100, 200, 500], 15, [3000, 15000, 30000, 60000], "cubic", 1280)
+if __name__ == '__main__':
+    main()
+    gen_graphs_rtt_uniform([5, 10, 20, 50, 100, 200, 500], 15, [3000, 15000, 30000, 60000], "cubic", 1280)
 # gen_graphs_rtt_comp(20, 200, 15, [3000, 15000, 30000, 60000], [4, 8, 12, 15], "reno", 1280)
 # gen_graphs_rtt_comp(20, 200, 15, [3000, 15000, 30000, 60000], [4], "reno", 1280)
 # gen_graphs_rtt_comp(20, 200, 15, [3000, 15000, 30000, 60000], [8], "reno", 1280)
