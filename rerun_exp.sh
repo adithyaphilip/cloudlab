@@ -56,6 +56,9 @@ echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
+"sudo sysctl net.ipv4.tcp_congestion_control=$3"
+
 echo "Waiting 60s just because"
 sleep 60
 
@@ -66,7 +69,7 @@ for i in $(seq $(($5 + 1)) $(($5 + $4)) ); do echo $IP_PREFIX$i >> $SERVER_PSSH_
 for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_PSSH_FILE; done
 
 echo "Starting servers"
-./start_servers.sh
+./start_servers.sh $3
 
 echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \

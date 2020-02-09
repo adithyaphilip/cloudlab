@@ -3,6 +3,12 @@ SERVER_LIST_FILE=servers_file_pssh
 TOT_SERVER_LIST_FILE=tot_servers_file_pssh
 BASE_PORT=6000
 
+if [ -z "$1" ];
+  then
+    echo "Usage: rerun_exp.sh congestion_algo"
+    exit 1
+fi
+
 echo "Servers:"
 cat $SERVER_LIST_FILE
 
@@ -12,6 +18,10 @@ parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h  $SERVER_LIST_
 echo "Killing existing iperf processes on all servers"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $TOT_SERVER_LIST_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
+
+echo "Changing congestion algo to $1 on all servers"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $TOT_SERVER_LIST_FILE \
+"sudo sysctl net.ipv4.tcp_congestion_control=$1"
 
 echo "Waiting 60s just in case"
 sleep 60
