@@ -82,8 +82,8 @@ parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_F
 
 
 echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
-"\"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log &\""
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
+"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log &"
 
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"

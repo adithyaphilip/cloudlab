@@ -18,6 +18,7 @@ def blocking_sleep(seconds: float):
 
 
 def start_sending(udp_bw_mbps: float, dest_ip: str, dest_port: int):
+    # packets_per_sec = udp_bw_mbps * pow(10, 6) / 8 / (MEAN_UDP_PACKET_SIZE + 30)
     packets_per_sec = udp_bw_mbps * pow(10, 6) / 8 / (MEAN_UDP_PACKET_SIZE + 30)
     data = b'0' * MAX_UDP_PACKET_SIZE
     random.seed()
@@ -27,7 +28,8 @@ def start_sending(udp_bw_mbps: float, dest_ip: str, dest_port: int):
     while True:
         client_sock = socket(AF_INET, SOCK_DGRAM)
         addr = (dest_ip, dest_port)
-        pkt_size = int(random.expovariate(1 / MEAN_UDP_PACKET_SIZE)) % MAX_UDP_PACKET_SIZE
+        # pkt_size = int(random.expovariate(1 / MEAN_UDP_PACKET_SIZE)) % MAX_UDP_PACKET_SIZE
+        pkt_size = MEAN_UDP_PACKET_SIZE
         client_sock.sendto(data[:pkt_size], addr)
         delay = random.expovariate(packets_per_sec)
         # print(delay)
