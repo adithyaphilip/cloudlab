@@ -1,7 +1,7 @@
 import sys
 import socket
 import consts
-from main import get_own_ip
+import netifaces
 
 
 def start_listening(port: int):
@@ -10,6 +10,7 @@ def start_listening(port: int):
 
     while True:
         _ = server_socket.recvfrom(2000)  # we just want to keep draining the socket
+
 
 
 def main():

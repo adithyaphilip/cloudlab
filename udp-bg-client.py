@@ -3,8 +3,9 @@ import time
 from socket import *
 import random
 
+import netifaces as netifaces
+
 import consts
-from main import get_own_ip
 
 MEAN_UDP_PACKET_SIZE = 1000
 MAX_UDP_PACKET_SIZE = 1400
@@ -41,6 +42,15 @@ def start_sending(udp_bw_mbps: float, dest_ip: str, dest_port: int):
         # if ctr == 100000:
         #     break
     # print("Avg error:", tot_err / ctr)
+
+
+def get_own_ip(starts_with):
+    for interface in netifaces.interfaces():
+        if netifaces.AF_INET in netifaces.ifaddresses(interface):
+            for link in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+                if 'addr' in link and link['addr'].startswith(starts_with):
+                    return link['addr']
+    return None
 
 
 def main():
