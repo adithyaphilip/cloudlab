@@ -1,5 +1,7 @@
 import sys
 import socket
+import consts
+from main import get_own_ip
 
 
 def start_listening(port: int):

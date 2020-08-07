@@ -3,7 +3,10 @@ import time
 from socket import *
 import random
 
-MEAN_UDP_PACKET_SIZE = 240
+import consts
+from main import get_own_ip
+
+MEAN_UDP_PACKET_SIZE = 1000
 MAX_UDP_PACKET_SIZE = 1400
 
 
@@ -18,34 +21,38 @@ def start_sending(udp_bw_mbps: float, dest_ip: str, dest_port: int):
     data = b'0' * MAX_UDP_PACKET_SIZE
     random.seed()
 
-    tot_err = 0
-    ctr = 0
+    # tot_err = 0
+    # ctr = 0
     while True:
         client_sock = socket(AF_INET, SOCK_DGRAM)
         addr = (dest_ip, dest_port)
-        client_sock.sendto(data, addr)
+        pkt_size = int(random.expovariate(1 / MEAN_UDP_PACKET_SIZE)) % MAX_UDP_PACKET_SIZE
+        client_sock.sendto(data[:pkt_size], addr)
         delay = random.expovariate(packets_per_sec)
         # print(delay)
-        start_time = time.time()
-        time.sleep(delay)
-        # blocking_sleep(delay)
-        actual_time = time.time() - start_time
+        # start_time = time.time()
+        # time.sleep(delay)
+        blocking_sleep(delay)
+        # actual_time = time.time() - start_time
         # print("Act:", actual_time)
-        tot_err += actual_time / delay
-        ctr += 1
+        # tot_err += actual_time / delay
+        # ctr += 1
 
-        if ctr == 10000:
-            break
-    print("Avg error:", tot_err / ctr)
-
+        # if ctr == 100000:
+        #     break
+    # print("Avg error:", tot_err / ctr)
 
 
 def main():
     if len(sys.argv) != 4:
-        print("ERROR: Usage: udp-bg-client.py UDP_BW_MBPS DEST_IP DEST_PORT")
+        print("ERROR: Usage: udp-bg-client.py UDP_BW_MBPS NUM_NODES_SIDE DEST_PORT")
         exit(1)
 
-    start_sending(float(sys.argv[1]), sys.argv[2], int(sys.argv[3]))
+    own_ip = get_own_ip(consts.IP_PREFIX)
+    node_num = int(own_ip[own_ip.rfind('.') + 1:])
+    print("Own node num: ", node_num)
+    target_ip = consts.IP_PREFIX + str(node_num - int(sys.argv[2]))
+    start_sending(float(sys.argv[1]), target_ip, int(sys.argv[3]))
 
 
 if __name__ == '__main__':
