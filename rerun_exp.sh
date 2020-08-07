@@ -27,10 +27,10 @@ echo Running with $1 flows per node for $2 seconds with $3 CCA using $4 out of $
 echo Using Git Branch $GIT_BRANCH_NAME
 
 # By default only 10 nodes can simultaneously wait for authentication, so sometimes logs were not copied.
-if [ -z "$(cat /etc/ssh/sshd_config | grep 'MaxStartups 100')" ]
+if [ -z "$(cat /etc/ssh/sshd_config | grep 'MaxStartups 1024')" ]
 then
-  echo "Setting MaxStartups to 100 for SSH"
-  echo 'MaxStartups 100' | sudo tee -a /etc/ssh/sshd_config > /dev/null
+  echo "Setting MaxStartups to 1024 for SSH"
+  echo 'MaxStartups 1024' | sudo tee -a /etc/ssh/sshd_config > /dev/null
   sudo service sshd restart
 fi
 
