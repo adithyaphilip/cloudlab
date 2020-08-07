@@ -29,7 +29,7 @@ parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $TOT_SERVER_LI
 
 echo "Updating servers to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
-"cd cloudlab; git pull; bash startup.sh;"
+"cd cloudlab; git pull; bash startup.sh stale;"
 
 echo "Waiting 60s just in case"
 sleep 60

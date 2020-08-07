@@ -75,7 +75,7 @@ echo "Starting servers"
 
 echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"cd cloudlab; git pull; bash startup.sh;"
+"cd cloudlab; git pull; bash startup.sh stale;"
 
 
 echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
