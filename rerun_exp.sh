@@ -13,6 +13,7 @@ TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
 NETEM_DELAY_MS_1=$7
 NETEM_DELAY_MS_2=$8
 NETEM_DELAY_2_NODES=$9
+BASE_UDP_PORT=2000
 
 # just to ensure the credential store has our password
 git config credential.helper store
@@ -56,6 +57,10 @@ echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
+echo "Killing existing UDP BG traffic servers on all clients (since servers send traffic with reverse iPerf)"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
+"for pid in \$(ps aux | grep -e [u]dp-bg | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
+
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "sudo sysctl net.ipv4.tcp_congestion_control=$3"
 
@@ -69,11 +74,17 @@ for i in $(seq $(($5 + 1)) $(($5 + $4)) ); do echo $IP_PREFIX$i >> $SERVER_PSSH_
 for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_PSSH_FILE; done
 
 echo "Starting servers"
-./start_servers.sh $3
+./start_servers.sh $3 $5
 
 echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
 "cd cloudlab; git pull; bash startup.sh;"
+
+
+echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
+"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log &"
+
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t $(($2 + 600)) -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \

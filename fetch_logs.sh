@@ -15,6 +15,7 @@ do
   GIT_BRANCH_SUFFIX=$4_nodes_$1_flows_$2_s_$3_algo_rev_$6_nm1_$7_nm2_$8_delayed_$trial
   for node in $(seq 1 $4)
   do
+    echo https://raw.githubusercontent.com/adithyaphilip/cloudlab/logs_$GIT_BRANCH_SUFFIX/iperf3_log_parsed_192.168.1.$node
     curl -f https://raw.githubusercontent.com/adithyaphilip/cloudlab/logs_$GIT_BRANCH_SUFFIX/iperf3_log_parsed_192.168.1.$node > logs/temp_$node
     if [ $? -gt 0 ]
       then
