@@ -64,9 +64,6 @@ parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PS
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "sudo sysctl net.ipv4.tcp_congestion_control=$3"
 
-echo "Waiting 60s just because"
-sleep 60
-
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE
 rm $TOT_SERVER_PSSH_FILE
