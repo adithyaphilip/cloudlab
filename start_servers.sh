@@ -37,7 +37,7 @@ sleep 60
 echo "Starting servers, with port numbers $((BASE_PORT + 1)) through $((BASE_PORT + NUM_SERVERS_PER_NODE))"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
 "for i in \$(seq 1 $NUM_SERVERS_PER_NODE); do iperf3 -s -p \$(($BASE_PORT+i)) -D; done;"
-
-echo "Starting UDP BG Traffic clients (on server nodes), with port numbers $((BASE_UDP_PORT))"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
-"nohup python3 ~/cloudlab/udp-bg-client.py 102  $2  $BASE_UDP_PORT > udp-client-1.log 2>&1 &"
+#
+#echo "Starting UDP BG Traffic clients (on server nodes), with port numbers $((BASE_UDP_PORT))"
+#parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
+#"nohup python3 ~/cloudlab/udp-bg-client.py 102  $2  $BASE_UDP_PORT > udp-client-1.log 2>&1 &"

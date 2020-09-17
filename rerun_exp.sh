@@ -66,9 +66,13 @@ echo "Setting congestion algo to $3 on client nodes"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "sudo sysctl net.ipv4.tcp_congestion_control=$3"
 
-echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
+echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log 2>&1 &"
+"cd cloudlab; git pull; bash startup.sh stale;"
+#
+#echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
+#parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
+#"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log 2>&1 &"
 
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE
@@ -78,10 +82,6 @@ for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_P
 
 echo "Starting servers"
 ./start_servers.sh $3 $5
-
-echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"cd cloudlab; git pull; bash startup.sh stale;"
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t $(($2 + 600)) -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
