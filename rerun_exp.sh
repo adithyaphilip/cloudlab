@@ -1,6 +1,6 @@
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ] || [ -z "$8" ] || [ -z "$9" ];
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ] || [ -z "$8" ] || [ -z "$9" ] || [ -z "${10}" ];
   then
-    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms_1 netem_delay_ms_2 delay_2_nodes"
+    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms_1 netem_delay_ms_2 delay_2_nodes variant"
     exit 1
 fi
 
@@ -14,6 +14,7 @@ NETEM_DELAY_MS_1=$7
 NETEM_DELAY_MS_2=$8
 NETEM_DELAY_2_NODES=$9
 BASE_UDP_PORT=2000
+VARIANT=${10}
 
 # just to ensure the credential store has our password
 git config credential.helper store
@@ -21,7 +22,7 @@ git checkout -b temp_verify && git push -fu origin temp_verify && git checkout m
 
 for trial in $(seq 1 $6)
 do
-GIT_BRANCH_NAME=logs_$4_nodes_$1_flows_$2_s_$3_algo_rev_"$NETEM_DELAY_MS_1"_nm1_"$NETEM_DELAY_MS_2"_nm2_"$NETEM_DELAY_2_NODES"_delayed_$trial
+GIT_BRANCH_NAME="$VARIANT"_logs_$4_nodes_$1_flows_$2_s_$3_algo_rev_"$NETEM_DELAY_MS_1"_nm1_"$NETEM_DELAY_MS_2"_nm2_"$NETEM_DELAY_2_NODES"_delayed_$trial
 
 echo Running with $1 flows per node for $2 seconds with $3 CCA using $4 out of $5 nodes per side, trial $trial
 echo Using Git Branch $GIT_BRANCH_NAME
@@ -61,8 +62,13 @@ echo "Killing existing UDP BG traffic servers on all clients (since servers send
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "for pid in \$(ps aux | grep -e [u]dp-bg | awk '{print \$2}'); do sudo kill -9 \$pid; done;"
 
+echo "Setting congestion algo to $3 on client nodes"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
 "sudo sysctl net.ipv4.tcp_congestion_control=$3"
+
+echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
+"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log 2>&1 &"
 
 echo "Configuring server list"
 rm $SERVER_PSSH_FILE
@@ -76,12 +82,6 @@ echo "Starting servers"
 echo "Updating clients to latest git repo at $(TZ=EST5EDT date)"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
 "cd cloudlab; git pull; bash startup.sh stale;"
-
-
-echo "Starting UDP BG Traffic servers (on client nodes), with port numbers $((BASE_UDP_PORT))"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"nohup python3 ~/cloudlab/udp-bg-server.py $BASE_UDP_PORT > udp-server-1.log &"
-
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t $(($2 + 600)) -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
