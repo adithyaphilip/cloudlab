@@ -1,6 +1,6 @@
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ]
   then
-    echo "Usage: fetch_logs_set.sh time_run congestion_algo num_trials netem_delay_2"
+    echo "Usage: fetch_logs_set.sh time_run congestion_algo num_trials netem_delay_2 variant"
     exit 1
 fi
 
@@ -17,7 +17,7 @@ do
     do
       for nodes in ${node_list[@]}
       do
-        ./fetch_logs.sh $((flows/nodes)) $1 $2 $nodes $3 $delay $4 $count
+        ./fetch_logs.sh $((flows/nodes)) $1 $2 $nodes $3 $delay $4 $count $5
         if [ $? -gt 0 ]
         then
           echo "ERROR reported by fetch_logs.sh, exiting"

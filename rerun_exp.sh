@@ -1,6 +1,6 @@
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ] || [ -z "$8" ] || [ -z "$9" ] || [ -z "${10}" ];
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ] || [ -z "$8" ] || [ -z "$9" ] || [ -z "${10}" ] || [ -z "${11}" ];
   then
-    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms_1 netem_delay_ms_2 delay_2_nodes variant"
+    echo "Usage: rerun_exp.sh num_flows_per_node test_time congestion_algo num_nodes_to_use_per_side num_nodes_total_per_side total_times_repeat netem_delay_ms_1 netem_delay_ms_2 delay_2_nodes variant if_name"
     exit 1
 fi
 
@@ -15,6 +15,7 @@ NETEM_DELAY_MS_2=$8
 NETEM_DELAY_2_NODES=$9
 BASE_UDP_PORT=2000
 VARIANT=${10}
+IF_NAME=${11}
 
 # just to ensure the credential store has our password
 git config credential.helper store
@@ -48,11 +49,11 @@ cat $CLIENT_PSSH_FILE
 
 echo "Adding netem to clients, since we use reverse iPerf now"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
+"sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
 
 echo "Setting specified number clients ($9) to delay type 2 with $NETEM_DELAY_MS_2 delay"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_DELAY_2_PSSH_FILE \
-"sudo tc qdisc del dev eno50 root; sudo tc qdisc add dev eno50 root netem delay $NETEM_DELAY_MS_2""ms limit 1000000000"
+"sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_2""ms limit 1000000000"
 
 echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
@@ -81,7 +82,7 @@ for i in $(seq $(($5 + 1)) $(($5 + $4)) ); do echo $IP_PREFIX$i >> $SERVER_PSSH_
 for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_PSSH_FILE; done
 
 echo "Starting servers"
-./start_servers.sh $3 $5
+./start_servers.sh $3 $5 $IF_NAME
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t $(($2 + 600)) -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \

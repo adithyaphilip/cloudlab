@@ -4,18 +4,19 @@ TOT_SERVER_LIST_FILE=tot_servers_file_pssh
 BASE_PORT=6000
 BASE_UDP_PORT=2000
 
-if [ -z "$1" ] || [ -z "$2" ];
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ];
   then
-    echo "Usage: start_servers.sh congestion_algo num_nodes_tot_side"
+    echo "Usage: start_servers.sh congestion_algo num_nodes_tot_side if_name"
     exit 1
 fi
+IF_NAME=$3
 
 echo "Servers:"
 cat $SERVER_LIST_FILE
 
 echo "Deleting any existing Netem delay on servers. Will fail if there is no netem."
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h  $SERVER_LIST_FILE \
-"sudo tc qdisc del dev eno50 root;";
+"sudo tc qdisc del dev $IF_NAME root;";
 echo "Killing existing iperf processes on all servers"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $TOT_SERVER_LIST_FILE \
 "for pid in \$(ps aux | grep -e [i]perf3 | awk '{print \$2}'); do sudo kill -9 \$pid; done;"

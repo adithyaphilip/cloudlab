@@ -4,10 +4,10 @@ sudo apt-get install -y python3-pip
 sudo apt-get install -y nload
 sudo pip3 install netifaces
 
-if [ -z "$1" ]
-then
-sudo bash setup_ssh.sh
-fi
+#if [ -z "$1" ]
+#then
+#sudo bash setup_ssh.sh
+#fi
 
 sudo sysctl -w net.core.rmem_max=2147479552
 sudo sysctl -w net.core.wmem_max=2147479552
