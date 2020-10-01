@@ -7,7 +7,7 @@ fi
 IP_PREFIX=192.168.1.
 CLIENT_PSSH_FILE=hosts_file_pssh
 CLIENT_TOT_PSSH_FILE=tot_hosts_file_pssh
-CLIENT_DELAY_2_PSSH_FILE=delay_2_hosts_file_pssh
+SERVER_DELAY_2_PSSH_FILE=servers_delay2_file_pssh
 SERVER_PSSH_FILE=servers_file_pssh
 TOT_SERVER_PSSH_FILE=tot_servers_file_pssh
 NETEM_DELAY_MS_1=$7
@@ -39,21 +39,16 @@ fi
 echo "Configuring client list"
 rm $CLIENT_PSSH_FILE
 rm $CLIENT_TOT_PSSH_FILE
-rm $CLIENT_DELAY_2_PSSH_FILE
+rm $SERVER_DELAY_2_PSSH_FILE
 for i in $(seq 1 $4); do echo $IP_PREFIX$i >> $CLIENT_PSSH_FILE; done
 for i in $(seq 1 $5); do echo $IP_PREFIX$i >> $CLIENT_TOT_PSSH_FILE; done
-for i in $(seq 1 $NETEM_DELAY_2_NODES); do echo $IP_PREFIX$i >> $CLIENT_DELAY_2_PSSH_FILE; done
 
 echo "Using following clients:"
 cat $CLIENT_PSSH_FILE
 
-echo "Adding netem to clients, since we use reverse iPerf now"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
-"sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
-
-echo "Setting specified number clients ($9) to delay type 2 with $NETEM_DELAY_MS_2 delay"
-parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_DELAY_2_PSSH_FILE \
-"sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_2""ms limit 1000000000"
+echo "Deleting any existing Netem delay on all clients. Will fail if there is no netem. Netem is on servers."
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h  $CLIENT_TOT_PSSH_FILE \
+"sudo tc qdisc del dev $IF_NAME root;";
 
 echo "Killing existing iPerf processes on clients"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_TOT_PSSH_FILE \
@@ -79,10 +74,11 @@ echo "Configuring server list"
 rm $SERVER_PSSH_FILE
 rm $TOT_SERVER_PSSH_FILE
 for i in $(seq $(($5 + 1)) $(($5 + $4)) ); do echo $IP_PREFIX$i >> $SERVER_PSSH_FILE; done
+for i in $(seq $(($5 + 1)) $(($5 + $NETEM_DELAY_2_NODES)) ); do echo $IP_PREFIX$i >> $SERVER_DELAY_2_PSSH_FILE; done
 for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_PSSH_FILE; done
 
 echo "Starting servers"
-./start_servers.sh $3 $5 $IF_NAME
+./start_servers.sh $3 $5 $IF_NAME $NETEM_DELAY_MS_1 $NETEM_DELAY_MS_2
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t $(($2 + 600)) -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
