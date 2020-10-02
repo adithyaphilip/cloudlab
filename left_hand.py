@@ -3,6 +3,7 @@ import sys
 import subprocess
 import consts
 import threading
+import time
 
 
 def iperf3_run(target_ip: str, n_flows: int, port_num: int, part: int):
@@ -31,6 +32,7 @@ def start_iperf(target_ip: str):
 
         threads.append(threading.Thread(target=iperf3_run, args=(target_ip, num_flows, port_num, part)))
         threads[-1].start()
+        time.sleep(5)
 
     for th in threads:
         th.join()
