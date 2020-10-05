@@ -17,6 +17,11 @@ NETEM_DELAY_MS_2=$5
 echo "Servers:"
 cat $SERVER_LIST_FILE
 
+
+echo "Deleting any existing Netem delay on all servers. Will fail if there is no netem. Netem is on servers."
+parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h  $SERVER_LIST_FILE \
+"sudo tc qdisc del dev $IF_NAME root;";
+
 echo "Adding netem to servers, since we use forward iPerf now"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
 "sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
