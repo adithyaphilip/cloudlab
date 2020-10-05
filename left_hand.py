@@ -32,7 +32,6 @@ def start_iperf(target_ip: str):
 
         threads.append(threading.Thread(target=iperf3_run, args=(target_ip, num_flows, port_num, part)))
         threads[-1].start()
-        time.sleep(10)
 
     for th in threads:
         th.join()
