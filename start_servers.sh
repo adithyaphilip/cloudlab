@@ -1,4 +1,4 @@
-NUM_SERVERS_PER_NODE=100
+NUM_SERVERS_PER_NODE=500
 SERVER_LIST_FILE=servers_file_pssh
 SERVER_DELAY_2_PSSH_FILE=servers_delay2_file_pssh
 TOT_SERVER_LIST_FILE=tot_servers_file_pssh
