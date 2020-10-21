@@ -16,7 +16,7 @@ PING_TIMEOUT_S = 5 if MODE == Mode.PROD else 1
 IPERF_SERVER_BASE_PORT = 6001
 
 # if there are more than these number of connections to be made, we will start a new client
-IPERF_MAX_CONN_PER_CLIENT = 1
+IPERF_MAX_CONN_PER_CLIENT = 10
 
 IP_PREFIX = "192.168.1." if MODE == Mode.PROD else "127.0.0."
 N_FLOWS = 2 if MODE == Mode.PROD else 2  # overridden in main.py via command line arguments
