@@ -17,11 +17,11 @@ NETEM_DELAY_MS_2=$5
 echo "Servers:"
 cat $SERVER_LIST_FILE
 
-echo "Adding netem to servers, since we use forward iPerf now"
+echo "Adding netem to servers, since we use forward iPerf now: $NETEM_DELAY_MS_1 ms"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_LIST_FILE \
 "sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_1""ms limit 1000000000"
 
-echo "Setting specified number of servers to delay type 2 with $NETEM_DELAY_MS_2 delay"
+echo "Setting specified number of servers to delay type 2 with $NETEM_DELAY_MS_2 ms delay"
 echo "Delay Type 2 Servers:"
 parallel-ssh -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $SERVER_DELAY_2_PSSH_FILE \
 "sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $NETEM_DELAY_MS_2""ms limit 1000000000"
