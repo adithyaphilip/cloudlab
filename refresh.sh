@@ -10,4 +10,4 @@ parallel-ssh $PSSH_OPTIONS -h setup_cl_clients "sudo apt remove -y iperf3;  cd ~
 # NOTE: lib32cz1 is required because of this bug (personally observed on Ubuntu 18.04): https://github.com/esnet/iperf/issues/168
 parallel-ssh $PSSH_OPTIONS -h setup_cl_clients "sudo apt update; sudo apt install -y lib32cz1"
 
-parallel-ssh -h setup_cl_clients -t 0 'sudo tc qdisc del dev ens1f1 root'
+parallel-ssh $PSSH_OPTIONS -h setup_cl_clients -t 0 'sudo tc qdisc del dev ens1f1 root'
