@@ -1,3 +1,5 @@
+PSSH_OPTIONS="-O UserKnownHostsFile=/dev/null -O StrictHostKeyChecking=no -p 100000"
+
 parallel-ssh -h setup_cl_clients -t 0 'sudo rm -Rf cloudlab && git clone https://github.com/adithyaphilip/cloudlab --single-branch /users/aphilip/cloudlab && cd /users/aphilip/cloudlab && bash startup.sh'
 
 # 2. Install iperf3 onto the nodes
