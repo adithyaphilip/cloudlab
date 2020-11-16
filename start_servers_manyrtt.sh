@@ -20,7 +20,7 @@ readarray -t SERVER_ARR <$SERVER_LIST_FILE
 
 echo "Adding netem to servers, since we use forward iPerf now"
 for i in $(seq 0 9); do
-  LATENCY=$(($i + 10))
+  LATENCY=$((19 - $i))
   echo "Server: ${SERVER_ARR[$i]}, Latency: $LATENCY"
   ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${SERVER_ARR[$i]} \
     "sudo tc qdisc del dev $IF_NAME root; sudo tc qdisc add dev $IF_NAME root netem delay $LATENCY""ms limit 1000000000"
