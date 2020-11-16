@@ -78,7 +78,7 @@ for i in $(seq $(($5 + 1)) $(($5 + $NETEM_DELAY_2_NODES)) ); do echo $IP_PREFIX$
 for i in $(seq $(($5 + 1)) $(($5 + $5)) ); do echo $IP_PREFIX$i >> $TOT_SERVER_PSSH_FILE; done
 
 echo "Starting servers"
-./start_servers_manyrtt.sh $3 $5 $IF_NAME $NETEM_DELAY_MS_1 $NETEM_DELAY_MS_2
+bash start_servers_manyrtt.sh $3 $5 $IF_NAME $NETEM_DELAY_MS_1 $NETEM_DELAY_MS_2
 
 echo "Running experiments on clients at $(TZ=EST5EDT date)"
 parallel-ssh -t $(($2 + 600)) -x "-o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -h $CLIENT_PSSH_FILE \
