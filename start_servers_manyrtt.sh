@@ -18,7 +18,7 @@ cat $SERVER_LIST_FILE
 
 readarray -t SERVER_ARR <$SERVER_LIST_FILE
 
-latencies=(60 20 10 80 100 120 140 160 180 200)
+latencies=(10 20 60 80 100 120 140 160 180 200)
 echo "Adding netem to servers, since we use forward iPerf now"
 for i in $(seq 0 9); do
   LATENCY=${latencies[i]}
